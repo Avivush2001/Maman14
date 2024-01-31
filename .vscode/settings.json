@@ -3,7 +3,8 @@
         "stdarg.h": "c",
         "constants.h": "c",
         "data.h": "c",
-        "warnings.h": "c"
+        "warnings.h": "c",
+        "file.h": "c"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/gcc"
 }

@@ -1,5 +1,7 @@
 #define RAM_SIZE 4096
-#define MAX_LINE_LENGTH 80
+#define MAX_LINE_LENGTH 81
+#define MAX_LABEL_SIZE 32
+#define HASHSIZE (RAN_SIZE / (MAX_LABEL_SIZE))
 
 
 
