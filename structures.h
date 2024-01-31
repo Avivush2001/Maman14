@@ -9,16 +9,19 @@ typedef struct {
     unsigned address;
  } Word;
 
+typedef struct {
+    Bit addrsMethod[4];
+} AllowedAddressing;
+
+/*
 struct Operation {
     unsigned code;
     AllowedAddressing allowedSrc;
     AllowedAddressing allowedDst;
     unsigned fields : 2;
 } Mov, Cmp, Add, Sub, Not, Clr, Lea, Inc, Dec, Jmp, Bne, Red, Prn, Jsr, Rts, Hlt;
+*/
 
-typedef struct {
-    Bit addrsMethod[4];
-} AllowedAddressing;
 
 typedef struct {
     Addressing addr;
