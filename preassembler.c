@@ -3,74 +3,78 @@
 #define MACRO_END "endmcr"
 
 
-FILE *preassembler(FILE*);
+FILE *preassembler(FILE*,char*);
 States lookForMacro(char*, int*);
-Symbol macroTable[HASHSIZE];/*Needed to be global so the rest of the program can recognize it.*/
+SymbolHashTable macroTable[HASHSIZE];
+/*Needed to be global so the rest of the program can recognize it.*/
 
 
 
-FILE *preassembler(FILE *fp) {
-    char *line, *macroName, *firstWord;
+/***************TODO LIST****************/
+/*
+-Complete the main function
+-Add function prototypes
+-Add Better Documantation
+-try to split the main preassembler function to different functions
+-Add Error handling when possible
+*/
+FILE *preassembler1(FILE *fp, char *fileName) {
+    char *line, *firstWord, *macroName;
     int indexOfMacro;
-    States state;
-    /*remember to create a fileeeeeeeeeeee*/
-    state = waitingForFile;
-    indexOfMacro = NOT_FOUND;
+    States macroFlag, tableFlag;
+    FILE *nfp;
+    Macro *macptr, *nextMac;
+    nfp = createFileWithSuffix(fileName, 'am');
+    macroFlag = readingLine;
+    tableFlag = hashTableFree;
     line = malloc(sizeof(char) * MAX_LINE_LENGTH);
     while((line = fgets(line, MAX_LINE_LENGTH, fp)) != EOF) {
-        state = lookForMacro(line, &indexOfMacro);
-        switch (state) {
-            case emptyLine: break;
-            case foundMacroDefinition: {
-                /*
-                Search if added already. If not add it and start add it
-                and change the flag to savingMacro.
-                */
-                macroName = getMacroName(line); /*REMEMBER TO HANDLE
-                CASE OF NAME NOT FOUND*/
-                indexOfMacro = lookUpTable(macroTable, macroName);
-                if (indexOfMacro == -1) {
-                    state = savingMacro;
-                    while (
-                    ((line = fgets(line, MAX_LINE_LENGTH, fp)) != EOF) && 
-                    (state == savingMacro)) {
-                        firstWord = readFirstWord(line);
-                        if (strcmp(firstWord,MACRO_END) != False) {
-                            /*Add the line to the table*/
-                        } else state =  macroDefinitionEnded;
-                        free(firstWord);
-                    }
+        firstWord = readFirstWord(line);
+        if (macroFlag != foundMacro) {
+            if ((strcmp(MACRO_DEF, firstWord) == False) && (tableFlag != hashTableFull)) {
+                macroName = getMacroName(line);
+                /*Add to table, also add a check for other preserved names and macros*/
+                if((indexOfMacro = lookUpTable(macroTable, macroName)) > -1) {
+                    indexOfMacro = insertToTable(macroTable, macroName, &tableFlag);
+                    macptr = malloc(sizeof(Macro));
+                    macptr->name = macroName;
+                    macroTable[indexOfMacro].item = macptr;
+                    macroFlag = foundMacro;
+                } else {
+                    /************Handle Error of macro already in table************/
                 }
-                free(macroName);
-                /*Maybe put this into a function*/
-                break;
+                
             }
-            case foundMacro: {
-                /*
-                Add the macro lines to the file.
-                */
-               break;
+            else if ((indexOfMacro = lookUpTable(macroTable, firstWord)) > -1) {
+                /*Insert lines from the table to the file*/
+                
+            } else {
+                /*insert line anyway*/
             }
-            default: {
-                /*
-                Add the line.
-                */
+            
+        } else {
+            /*
+            Insert lines to table until encounterd endmcr
+            handle case of Macro definition inside macro
+            */
+            if (strcmp(firstWord, MACRO_END) != False) {
+                nextMac = malloc(sizeof(Macro));
+                macptr->line = line;
+                macptr->nextLine = nextMac;
+                macptr = nextMac;
+            } else {
+                macroFlag = macroDefinitionEnded;
+                free(nextMac);
             }
+            
         }
-        free(line);
+        free(firstWord);
+        
+        
     }
+    free(line);
 }
-States lookForMacro(char *line, int *index) {
-    States flag;
-    char *firstWord;
-    flag = noMacroFound;
-    firstWord = readFirstWord(line);
-    if (strcmp(firstWord,MACRO_DEF) == False) flag = foundMacroDefinition;
-    if ((*index = lookUpTable(macroTable, firstWord)) != NOT_FOUND) flag = foundMacro;
-    if (*firstWord == '\0') flag = emptyLine;
-    free(firstWord);
-    return flag;
-}
+
 
 char *getMacroName(char *line) {
     char *name;
@@ -110,9 +114,9 @@ int lookUpTable(SymbolHashTable *table, char *name) {
         if(strcmp(table[hash].name, name) == False) {
             index = hash;
             break;
-        };
+        }
     }
-    return hash;
+    return index;
 }
 
 int generateKey(char *name) {
@@ -129,4 +133,19 @@ int generateHash(int key, int i) {
     hashFunc1 = key % HASHSIZE;
     hashFunc2 = 1 + (key % (HASHSIZE-1));
     return (hashFunc1 + (i*hashFunc2)) % HASHSIZE;
+}
+/*For inserting an item into the table for the first time. returns the index of it.*/
+int insertToTable(SymbolHashTable *table, char *name, States *tableFlag) {
+    int hash, i, key, index;
+    key = generateKey(name);
+    index = NOT_FOUND;
+    for(i = 0; i < HASHSIZE; i++) {
+        hash = generateHash(key, i);
+        if(table[hash].name == NULL) {
+            index = hash;
+            break;
+        }
+    }
+    if (i == (HASHSIZE-1)) *tableFlag = hashTableFull;
+    return index;
 }
