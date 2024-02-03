@@ -13,14 +13,14 @@ typedef struct {
     Bit addrsMethod[4];
 } AllowedAddressing;
 
-/*
-struct Operation {
+
+typedef struct {
     unsigned code;
     AllowedAddressing allowedSrc;
     AllowedAddressing allowedDst;
     unsigned fields : 2;
-} Mov, Cmp, Add, Sub, Not, Clr, Lea, Inc, Dec, Jmp, Bne, Red, Prn, Jsr, Rts, Hlt;
-*/
+} Operation ;
+
 
 
 typedef struct {
@@ -43,5 +43,11 @@ typedef struct {
 
 typedef struct {
     char *name;
-    unsigned range[2];
+    char *line;
+    Macro *nextLine;
 } Macro;
+
+typedef struct {
+    char *name;
+    void *item;
+} SymbolHashTable;

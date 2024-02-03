@@ -3,8 +3,10 @@ typedef enum {
     readingLine,
     emptyLine,
     foundMacroDefinition,
+    foundMacro,
     savingMacro,
     macroDefinitionEnded,
     placingMacro,
+    noMacroFound,
     finished
 } States;
