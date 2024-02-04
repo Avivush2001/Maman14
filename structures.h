@@ -18,7 +18,7 @@ typedef struct {
     unsigned code;
     AllowedAddressing allowedSrc;
     AllowedAddressing allowedDst;
-    unsigned fields : 2;
+    unsigned fields;
 } Operation ;
 
 

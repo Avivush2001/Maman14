@@ -1,7 +1,7 @@
-enum Bool{
+typedef enum {
     False = 0,
     True = 1
-};
+} Bool;
 
 enum Registers {
     R0 = 0x0,

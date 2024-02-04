@@ -1,8 +1,15 @@
 typedef enum {
     readingLine,
-    foundMacro,
+    macroDefinitionStarted,
+    macroDefinitionOngoing,
     macroDefinitionEnded,
-    insertSucsess,
+    macroCall,
+    addLine,
+    allclearPA,
+    errorPA
+} PreassemblerFlags;
+
+typedef enum {
     hashTableFree,
     hashTableFull
-} States;
+} HashTableFlags;
