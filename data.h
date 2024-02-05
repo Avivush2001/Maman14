@@ -9,3 +9,5 @@
 #include "warnings.h"
 #include "file.h"
 #include "preassembler.h"
+#include "hashtable.h"
+#include "util.h"

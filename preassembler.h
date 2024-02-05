@@ -9,7 +9,3 @@ typedef enum {
     errorPA
 } PreassemblerFlags;
 
-typedef enum {
-    hashTableFree,
-    hashTableFull
-} HashTableFlags;

@@ -1,11 +1,8 @@
 #include "data.h"
 
-
-
 FILE *preassembler(FILE*,char*);
 PreassemblerFlags lookForMacro(char*, int*);
-SymbolHashTable macroTable[HASHSIZE];
-HashTableFlags macroTableFlag;
+SymbolHashTable macroTable;
 /*Needed to be global so the rest of the program can recognize it.*/
 
 
@@ -111,14 +108,17 @@ FILE *preassembler(FILE *fp, char *fileName) {
     /*Pointers to the current macro item in the list and to the next one*/
     Macro *macptr, *nextMac;
 
+    /*Pointer to the macroTable*/
+    SymbolHashTable *macroTableptr;
     /*Create a file with a new suffix.*/
     nfp = createFileWithSuffix(fileName, 'am');
     
     /*Flag setups*/
     contextFlag = readingLine;
     errorFlag = allclearPA;
-    macroTableFlag = hashTableFree;
-    
+
+    /*Initialize the table*/
+    macroTableptr = initializeHashTable(&macroTable);
     /*Line memory allocation*/
     line = malloc(sizeof(char) * MAX_LINE_LENGTH);
     
@@ -172,7 +172,7 @@ FILE *preassembler(FILE *fp, char *fileName) {
 Get the context of the line. The function checks for each relevent flags
 if relevent parameters of the line are present. If they are the newFlag won't be an error
 */
-PreassemblerFlags lineContext(char *line, char *firstWord, PreassemblerFlags currentFlag,int *indexOfMacro) {
+PreassemblerFlags lineContext(char *line, char *firstWord, PreassemblerFlags currentFlag, int *indexOfMacro) {
     PreassemblerFlags newFlag;
     newFlag = errorPA;
     switch (currentFlag) {
@@ -183,7 +183,7 @@ PreassemblerFlags lineContext(char *line, char *firstWord, PreassemblerFlags cur
                 newFlag = checkForMacroCall(line, firstWord, indexOfMacro);
             }
             /*If firstWord is a macro definition*/
-            if(strcmp(firstWord,MACRO_DEF) == 0 && macroTableFlag==hashTableFree) {
+            if(!strcmp(firstWord,MACRO_DEF) && macroTable.flag == hashTableFree) {
                 newFlag = macroDefinitionStarted;
             }
             break;
@@ -195,7 +195,7 @@ PreassemblerFlags lineContext(char *line, char *firstWord, PreassemblerFlags cur
                 newFlag = macroDefinitionOngoing;
             }
             /*If the macro definition ended*/
-            if (strcmp(firstWord,MACRO_END) == 0) {
+            if (!strcmp(firstWord,MACRO_END)) {
                 newFlag = macroDefinitionEnded;
             }
             break;
@@ -209,7 +209,7 @@ PreassemblerFlags lineContext(char *line, char *firstWord, PreassemblerFlags cur
 PreassemblerFlags checkForMacroCall(char *line, char *firstWord, int *indexOfMacro) {
     PreassemblerFlags newFlag;
     newFlag = errorPA;     
-    if ((*indexOfMacro = lookUpTable(macroTable, firstWord)) == NOT_FOUND) {
+    if ((*indexOfMacro = lookUpTable(&macroTable, firstWord)) == NOT_FOUND) {
         /*If no macro exists yet it is a legal label*/
         if (isLabelLegal(firstWord) != True) {
             newFlag = addLine;
@@ -241,101 +241,4 @@ char *readFirstWord(char *line) {
     /* If it found atleast one letter, it will find its size than will copy it to the pointer */
     
     return word;
-}
-
-
-/*************Returns a hash table's items index, is -1 if not found.************/
-
-int lookUpTable(SymbolHashTable *table, char *name) {
-    int hash, i, key, index;
-    index = NOT_FOUND;
-    key = generateKey(name);
-
-    for(i = 0; i < HASHSIZE; i++) {
-        hash = generateHash(key, i);
-        if(strcmp(table[hash].name, name) == False) {
-            index = hash;
-            break;
-        }
-    }
-    
-    
-    return index;
-}
-
-int generateKey(char *name) {
-    int key, i, size;
-    key = 0;
-    size = strlen(name);
-    for (i = 0; i < size; i++) key += name[i];
-    return key;
-}
-
-
-int generateHash(int key, int i) {
-    int hashFunc1, hashFunc2;
-    hashFunc1 = key % HASHSIZE;
-    hashFunc2 = 1 + (key % (HASHSIZE-1));
-    return (hashFunc1 + (i*hashFunc2)) % HASHSIZE;
-}
-/*For inserting an item into the table for the first time. returns the index of it.*/
-int insertToTable(SymbolHashTable *table, char *name, HashTableFlags *tableFlag) {
-    int hash, i, key, index;
-    key = generateKey(name);
-    index = NOT_FOUND;
-    for(i = 0; i < HASHSIZE; i++) {
-        hash = generateHash(key, i);
-        if(table[hash].name == NULL) {
-            index = hash;
-            break;
-        }
-    }
-    if (i == (HASHSIZE-1)) *tableFlag = hashTableFull;
-    return index;
-}
-
-/*
-function for finding a word in a string array.
-currently used for preserved words.
-*/
-
-int findInStringArray(char* word, char *arr[], int size) {
-    int index, i;
-    index = NOT_FOUND;
-    for (i = 0; i < size; i++) {
-        if (strcmp(word, arr[i]) == 0) {
-            index = i;
-            break;
-        }
-    }
-    return index;
-}
-
-
-/***********************Functions for checking if a label is legal***********************/
-/*Label not including ':' at the end*/
-Bool isLabelLegal(char *label) {
-    Bool ans;
-    int i, size;
-    size = strlen(label);
-    ans = True;
-    if (isPreservedWord(label) == True) ans = False;
-    else {
-        if (!isalpha(label[0])) ans = False;
-        for (i = 1; i < size; i++) {
-            if (!isalpha(label[i]) && !isdigit(label[i])) {
-                ans = False;
-                break;
-            }
-        }
-        }
-    return ans;
-}
-Bool isPreservedWord(char *label) {
-    Bool ans;
-    ans = True;
-    if (findInStringArray(label, operationsArr, OPERATIONS_SIZE) != NOT_FOUND) ans = False;
-    else if (findInStringArray(label, registersArr, REGISTERS_SIZE) != NOT_FOUND) ans = False;
-    else if (findInStringArray(label, instructionArr, INSTRUCTIONS_SIZE) != NOT_FOUND) ans = False;
-    return ans;
 }

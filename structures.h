@@ -9,10 +9,10 @@ typedef struct {
     unsigned address;
  } Word;
 
+
 typedef struct {
     Bit addrsMethod[4];
 } AllowedAddressing;
-
 
 typedef struct {
     unsigned code;
@@ -47,7 +47,3 @@ typedef struct {
     Macro *nextLine;
 } Macro;
 
-typedef struct {
-    char *name;
-    void *item;
-} SymbolHashTable;
