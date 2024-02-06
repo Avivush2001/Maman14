@@ -4,7 +4,8 @@
         "constants.h": "c",
         "data.h": "c",
         "warnings.h": "c",
-        "file.h": "c"
+        "file.h": "c",
+        "typeinfo": "c"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/gcc"
 }

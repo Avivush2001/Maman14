@@ -12,3 +12,6 @@ Bool isLabelLegal(char*);
 
 /*Checks if a string is a preserved word*/
 Bool isPreservedWord(char*);
+
+/*Counts words in a line*/
+int countWordsInLine(char*);

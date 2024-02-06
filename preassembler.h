@@ -5,7 +5,11 @@ typedef enum {
     macroDefinitionEnded,
     macroCall,
     addLine,
+    skipMacroDefinition,
+    skipUndefinedMacro,
     allclearPA,
     errorPA
 } PreassemblerFlags;
+
+
 

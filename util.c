@@ -70,3 +70,16 @@ Bool isPreservedWord(char *label) {
     else if (findInStringArray(label, instructionArr, INSTRUCTIONS_SIZE) != NOT_FOUND) ans = True;
     return ans;
 }
+
+/*
+Given a string, it counts the words in that line that are seperated.
+*/
+int countWordsInLine(char *line) {
+    int count, i;
+    count = 0;
+    for (i = 0; i < strlen(line); i++) {
+        if (isgraph(line[i])) count++;
+        while(isgraph(line[i])) i++;
+    }
+    return count;
+}
