@@ -8,7 +8,12 @@ typedef enum {
     skipMacroDefinition,
     skipUndefinedMacro,
     allclearPA,
-    errorPA
+    errorMacroNameIllegal,
+    errorMacroNameAlreadyDefined,
+    errorMacroHashTableFull,
+    errorEncounteredPA,
+    errorNoMacroNameGiven
+
 } PreassemblerFlags;
 
 

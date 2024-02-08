@@ -6,15 +6,6 @@
     It declares a file pointer and a char pointer designated to hold the new name.
     Then it creates the new file name and then the file, frees the char pointer and returns the file pointer.
 */
-FILE *createFileWithSuffix( char *name, char *suffix) {
-    FILE *fp;
-    char *newName;
-    newName = newFileName(name,suffix);
-    fp = fopen(newName, "w");
-    free(newName);
-    return fp;
-}
-
 /* 
 The function gets a suffix and a file name as described earlier, declares a char poiner and allocating
 it enough space for the file name (without the old suffix) and for the new suffix.

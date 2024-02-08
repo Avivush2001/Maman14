@@ -40,7 +40,7 @@ int lookUpTable(SymbolHashTable *table, char *name) {
 
     for(i = 0; i < HASHSIZE; i++) {
         hash = generateHash(key, i);
-        if(strcmp(table->items[hash].name, name) == False) {
+        if(!strcmp(table->items[hash].name, name)) {
             index = hash;
             break;
         }

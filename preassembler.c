@@ -1,4 +1,14 @@
 #include "data.h"
+#define MACRO_DEF "mcr"
+#define MACRO_END "endmcr"
+#define MACRO_AT_INDEX macroTable.items[indexOfMacro].item
+#define COMPARE_MACRO_END !strcmp(field1,MACRO_END)
+#define DEFAULT_CONTEXT_PA contextFlag = readingLine
+#define ERROR_CASE_PA(_flag, _errorMessege) ERROR_CASE("pre assembler", _flag, _errorMessege)\
+newFlag = errorEncounteredPA;\
+*contextFlag = skipMacroDefinition;\
+break;
+
 FILE *preassembler(FILE*,char*);
 PreassemblerFlags lookForMacro(char*, int*);
 SymbolHashTable macroTable;
@@ -9,8 +19,8 @@ SymbolHashTable macroTable;
 /***************TODO LIST****************/
 /*
 -Add function prototypes
--Add Better Documantation
 -try to split the main preassembler function to different functions
+-Add free the macro function
 */
 
 /*
@@ -27,9 +37,7 @@ mcr macro something
 endmcr something
 
 The 'something' is ignored.
-*/
-
-/*
+//////////////////////////////
 This is the main pre-assembler function.
 
 Flags and their meaning:
@@ -43,43 +51,34 @@ Error Flag - Is updated only if an error occurs.
 This is the algorithm:
 1 - Read a line and store its adress in a pointer. If end of file is reached, go to
     the last step.
-2 - Read the first word in the line and store its adress in a pointer.
-3 - Is the context flag isn't skipping a macro definition? if not skip to step 7.
-4 - Save the current context flag in the previous context flag, and get the new context flag
-    using it and the first word we got earlier. If the new context throws out an error, go to step 6
-5 - Switch-Case statement, depends on the context given earlier it does an action and updates
-    the context flag if needed. If the context flag isn't giving out an error go to step 1.
-6 - An error has occured during macro definition. Using the previous context 
-    print an error messege and, update the error flag and the context flag 
-    to skip a macro definition. Go to step one.
-7 - If the first word equals 'endmcr' update the context flag. Go to step 1.
-8 - If the error flag is on, close the file we created and remove it.
+2 - Read the first two fields.
+3 - Get the line context:
+    addLine - go to step 4
+    macroCall - go to step 5
+    macroDefinitionStarted - go to step 6
+    macroDefinitionOngoing - go to step 8
+    skipMacroDefinition - go to step 1
+    readingLine, skipunDefinedMacro, macroDefinitionEnded - change context flag
+    to readingLine and go to step 1
+4 - Add the line to the file, go to step 1.
+5 - Get the macro from the table using the first field, add all the lines, go to step 1.
+6 - Check for any possible error. If an error occured go to step 9.
+7 - Insert the name to the macroTable, go to step 1.
+8 - Insert the line to the macro using the index found earlier, go to step 1.
+9 - Print an error message and change the context and error flags, go to step 1.
 */
 FILE *preassembler(FILE *fp, char *fileName) {
     /******Initializations*******/
-
+    char *line, *field1, *field2, *newName; 
     /*
-    Pointers to the line, 
-    to the first word in the line, 
-    to the macro name.
-    (Haiku for no reason)
+    Index of the macro in the table that we are defining / inserting into the file, 
+    counters for error handling.
     */
-    char *line, *firstWord, *macroName; 
-    
-    /*
-    Index of the macro we are defining / inserting into the file, 
-    a line counter for error handling,
-    */
-    int indexOfMacro, lineCounter;
-    
-
-    /*
-    Flags for the context of the current line,
-    an error flag for when an error was encountered atleast once
-    a flag for the previous flag for error handling
-    */
+    int indexOfMacro, lineCounter, stringCounter;
+    /*Flags as defined earlier*/
     PreassemblerFlags prevFlag, contextFlag, errorFlagPA; 
-    
+    /*Flags that signal either to free *field2 or *line.*/
+    Bool freeField2, freeLine;
     /*File pointer to the new file.*/
     FILE *nfp;
 
@@ -89,177 +88,171 @@ FILE *preassembler(FILE *fp, char *fileName) {
     /*Pointer to the macroTable*/
     SymbolHashTable *macroTableptr;
     /*Create a file with a new suffix.*/
-    char *newName;
-    newName = newFileName(fileName,'am');
-    fp = fopen(newName, "w");
+    fileName = newFileName(fileName,'am');
+    fp = fopen(fileName, "w");
     
     /*Flag setups*/
-    contextFlag = readingLine;
+    DEFAULT_CONTEXT_PA;
     errorFlagPA = allclearPA;
 
     /*Initialize the table*/
     macroTableptr = initializeHashTable(&macroTable);
-
     /*Line memory allocation*/
-    line = malloc(sizeof(char) * MAX_LINE_LENGTH);
-    
+    line = MALLOC_LINE;
     /*Intigers setup*/
     lineCounter = 1;
     indexOfMacro = NOT_FOUND;
     
-    /*Main loop*/
-    while((line = fgets(line, MAX_LINE_LENGTH, fp)) != EOF && lineCounter <= RAM_SIZE) {
-        firstWord = readFirstWord(line);
-        if (contextFlag != skipMacroDefinition) {
-            prevFlag = contextFlag;
-            contextFlag = lineContext(line, firstWord, contextFlag, &indexOfMacro);
-        }
-        /*get its context*/
-        
+    /*Main loop (step 1)*/
+    while((line = fgets(line, MAX_LINE_LENGTH, fp)) != EOF) {
+        /*Memory allocations and reading the first two fields (step 2)*/
+        field1 = MALLOC_LABEL;
+        field2 = MALLOC_LABEL;
+        stringCounter = READ_FIRST_TWO_FIELDS;
+        freeField2 = True;
+        freeLine = True;
+        /*Get the line's context (step 3)*/
+        contextFlag = lineContext( field1, contextFlag, &indexOfMacro);
         switch (contextFlag) {
-            /*Add line to file*/
-            case addLine: {                
-                contextFlag = readingLine;
+            /*Add line to file (step 4)*/
+            case addLine: {        
+                        
+                DEFAULT_CONTEXT_PA;
                 fputs(line,nfp);
                 break;
             }
-            /*Add all the lines from the macro into the file using indexOfMacro*/
+            /*Add all the lines from the macro into the file using the 
+            index we got when getting the line context indexOfMacro (step 5)*/
             case macroCall: {
-                macptr = macroTable.items[indexOfMacro].item;
+                macptr = MACRO_AT_INDEX;
                 while(macptr->nextLine != NULL) {
                     fputs(macptr->line, nfp);
                     macptr = macptr->nextLine;
                 }
-                contextFlag = readingLine;
+                DEFAULT_CONTEXT_PA;
                 break;
             }
-            /*Add the macro to the table*/
+            /*Add the macro to the table (steps 6 and 7)*/
             case macroDefinitionStarted: {
-                macroName = getMacroName(line);
-                prevFlag = contextFlag;
-                if (isLabelLegal(macroName)) {
+                contextFlag = canDefineMacro(field2, stringCounter);
+                if (contextFlag == macroDefinitionStarted) {
                     contextFlag = macroDefinitionOngoing;
-                    indexOfMacro = insertToTable(&macroTable, macroName);
+                    indexOfMacro = insertToTable(&macroTable, field2);
                     macptr = malloc(sizeof(Macro));
-                    macptr->name = macroName;
-                    macroTable.items[indexOfMacro].item = macptr;
-                } else contextFlag = errorPA;
+                    macptr->name = field2;
+                    MACRO_AT_INDEX = macptr;
+                    freeField2 = False;
+                }
                 break;
             }
-            /*Add the line to the macro*/
+            /*Add the line to the macr (step 8)*/
             case macroDefinitionOngoing: {
                 macptr->line = line;
                 nextMac = malloc(sizeof(Macro));
-                nextMac->name = macroName;
+                nextMac->name = macptr->name;
                 macptr->nextLine = nextMac;
                 macptr = nextMac;
+                freeLine = False;
                 break;
             }
-            /*Dont do anything*/
+            /*Dont do anything for skipMacroDefinition*/
+            case skipMacroDefinition: break;
+            /*Dont do anything but change the context for skipUndefinedMacro, macroDefinitionEnded*/
             default: {
-                contextFlag = readingLine;
+                DEFAULT_CONTEXT_PA;
                 break;
             }
         }
-        /*If error encountered, print error and change the flag.*/
-        if (contextFlag == errorPA) {
-            fprintf(stderr,"Error encountered at line %d in file %s: ",lineCounter, fileName);
-            /*REWRITE TO IF STATEMENTS*/
-            switch (prevFlag) {
-                case macroDefinitionStarted: {
-                    fprintf(stderr,"Tried to define a macro with an illegal macro name.\n");
-                    free(macroName);
-                    break;
-                }
-                default: {
-                    fprintf(stderr,"Tried to define a macro while the macro table is full.\n");
-                    break;
-                }
-                contextFlag = skipMacroDefinition;
-            }
-            errorFlagPA = errorPA;
-        }
-
-        if(strcmp(firstWord, MACRO_END) != 0) contextFlag = readingLine;
-        free(firstWord);
-        if (contextFlag != macroDefinitionOngoing) free(line);
-        /*Line memory allocation*/
-        line = malloc(sizeof(char) * MAX_LINE_LENGTH);
+        /*Handle errors (step 9)*/
+        errorFlagPA = errorHandler(&contextFlag, errorFlagPA,lineCounter, fileName);
+        /*Free relevent memeory spaces*/
+        free(field1);
+        if (freeField2) free(field2);
+        if (freeLine) free(line);
+        /*Allocate new memory for the line and advance the line counter.*/
+        line = MALLOC_LINE;
         lineCounter++;
     }
-    if (errorFlagPA == errorPA) {
+    /*Delete the file that was created if an error was encountered.*/
+    if (errorFlagPA == errorEncounteredPA) {
         fclose(nfp);
-        remove(newName);
+        remove(fileName);
         nfp = fp;
     }
     /*Add a method at the end of the pre assembler to free all of the macro items 
     and their lines*/
+    free(fileName);
     free(line);
-    free(newName);
     return nfp;
 }
 /*
-Get the context of the line. The function checks for each relevent flags
-if relevent parameters of the line are present. If they are the newFlag won't be an error
+Get the context of the line. The function is supposed to get one of these 3 flags:
+skipMacroDefinition, readingLine, macroDefinitionOngoing.
+Using the flag and the first field we got earlier, it returns a new flag,
+and if it found a macro call indexOfMacro will be updated to that index.
 */
-PreassemblerFlags lineContext(char *line, char *firstWord, PreassemblerFlags currentFlag, int *indexOfMacro) {
+PreassemblerFlags lineContext(char *field1, PreassemblerFlags currentFlag, int *indexOfMacro) {
     PreassemblerFlags newFlag;
-    newFlag = errorPA;
-    /*REWRITE TO IF STATEMENTS*/
+    newFlag = currentFlag;
+    if (!strcmp(MACRO_DEF, field1)) newFlag = macroDefinitionStarted;
+
     switch (currentFlag) {
-        /*Reading a line*/
-        case readingLine: {
-            /*If firstWord is a macro definition*/
-            if(!strcmp(firstWord,MACRO_DEF)) {
-                if (macroTable.flag == hashTableFree)
-                newFlag = macroDefinitionStarted;
-            } else newFlag = checkForMacroCall(firstWord, indexOfMacro);
+        /*If skipMacroDefinition is on check if the first field is the end of the macro.
+        If it is it means the macro definition we are skipping ended. */
+        case skipMacroDefinition:
+            if (COMPARE_MACRO_END) newFlag = readingLine;
             break;
-        }
-        /*A macro definition has been started*/
-        default: {
-            /*If the macro definition ended*/
-            if (!strcmp(firstWord,MACRO_END)) {
-                newFlag = macroDefinitionEnded;
+        /*If readingLine is on, check for macro call.*/
+        case readingLine:
+            newFlag = checkForMacroCall(field1, indexOfMacro);
+            break;
+        /*If macroDefinitionOngoing is on, check if the first field is the end of the macro
+        definition. If it is the definition ended, if it isn't it's still ongoing*/
+        case macroDefinitionOngoing:
+            if (COMPARE_MACRO_END) {
+               newFlag = macroDefinitionEnded;
             } else newFlag = macroDefinitionOngoing;
             break;
-        }
-
-        return newFlag;
     }
-
+    return newFlag;
 }
-/*More sophesticated method to check for Macro Call*/
-PreassemblerFlags checkForMacroCall(char *word, int *indexOfMacro) {
+/*The function tries to find the macro in the table. If it found it, the flag will be
+macroCall. If it didn't find it, but the label is legal (meaning it is a viable macro name)
+then this is an undefined macro call, so skip it. otherwise add the line*/
+PreassemblerFlags checkForMacroCall(char *field, int *indexOfMacro) {
     PreassemblerFlags newFlag;  
-    if ((*indexOfMacro = lookUpTable(&macroTable, word)) == NOT_FOUND) newFlag = addLine;
-    else if (isLabelLegal(word)) newFlag = skipUndefinedMacro;
+    if ((*indexOfMacro = lookUpTable(&macroTable, field)) == NOT_FOUND) newFlag = addLine;
+    else if (isLabelLegal(field)) newFlag = skipUndefinedMacro;
     else newFlag = macroCall;
     
     return newFlag;
 }
-/*check if a label is not a macro*/
-
-char *getMacroName(char *line) {
-    char *name;
-    int size;
-    line = strstr(line, MACRO_DEF) + 4;
-    name = readFirstWord(line);
-    return name;
-}
-
-char *readFirstWord(char *line) {
-    int size;
-    char *word;
-    word;
-    while(isalpha(*line) == 0 && *line != '\0') {
-        line++;
-    }
-    for(size = 0; isgraph(line[size]) != 0; size++);
-    word = malloc(sizeof(char) * (size+1));
-    word = strncpy(word, line, size);
-    word[size] = '\0';
-    /* If it found atleast one letter, it will find its size than will copy it to the pointer */
+/*Check for possible error before defining a macro.
+Possible errors are:
+no macro name given, label isn't legal, hashtable is full, macro name alread in the table*/
+PreassemblerFlags canDefineMacro(char *macroName, int stringCount) {
+    PreassemblerFlags newFlag;
+    newFlag = macroDefinitionStarted;
+    if (stringCount != 2) 
+        newFlag = errorNoMacroNameGiven;
+    else if (!isLabelLegal(macroName)) 
+        newFlag = errorMacroNameIllegal;
+    else if (macroTable.flag == hashTableFull) 
+        newFlag = errorMacroHashTableFull;
+    else if (lookUpTable(&macroTable, macroName) != NOT_FOUND) 
+        newFlag = errorMacroNameAlreadyDefined;
+    return newFlag;
     
-    return word;
+}
+/*Error handler. Using the context flag decide which error to display.*/
+PreassemblerFlags errorHandler(PreassemblerFlags *contextFlag,PreassemblerFlags errorFlag, int lineCounter, char *fileName) {
+    PreassemblerFlags newFlag;
+    newFlag = errorFlag;
+    switch (*contextFlag) {
+        ERROR_CASE_PA(errorNoMacroNameGiven, "No macro name given.\n")
+        ERROR_CASE_PA(errorMacroNameIllegal, "Macro name is illegal.\n")
+        ERROR_CASE_PA(errorMacroHashTableFull, "Hash table is full.\n")
+        ERROR_CASE_PA(errorMacroNameAlreadyDefined, "Macro name is already defined.\n")
+    }
+    return newFlag;
 }
