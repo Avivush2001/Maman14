@@ -92,7 +92,7 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
         freeField2 = True;
         freeLine = True;
         /*Get the line's context (step 3)*/
-        contextFlag = lineContext(field1, contextFlag, &indexOfMacro, macroTable);
+        contextFlag = lineContext( contextFlag, field1, &indexOfMacro, macroTable);
         switch (contextFlag) {
             /*Add line to file (step 4)*/
             case addLine: {        

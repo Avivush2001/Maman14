@@ -33,10 +33,10 @@ typedef enum {
 /*Struct that defines a macro.
 holds its name, a line, and a pointer to a macro structure
 that holds the same name and the next line.*/
-typedef struct {
+typedef struct MacroStruct {
     char *name;
     char *line;
-    Macro *nextLine;
+    struct MacroStruct *nextLine;
 } Macro;
 
 /*Function Prototypes*/

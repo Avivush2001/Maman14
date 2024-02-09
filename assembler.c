@@ -10,4 +10,5 @@ int main() {
     fclose(fp);
     fclose(nfp);
     freeTableNames(&macroHashTable);
+    return 0;
 }

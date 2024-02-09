@@ -3,11 +3,11 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdarg.h>
-#include "enums.h"
 #include "constants.h"
+#include "enums.h"
 #include "structures.h"
-#include "warnings.h"
-#include "file.h"
-#include "preassembler.h"
-#include "hashtable.h"
 #include "util.h"
+#include "file.h"
+#include "hashtable.h"
+#include "preassembler.h"
+

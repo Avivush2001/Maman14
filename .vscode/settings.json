@@ -5,7 +5,8 @@
         "data.h": "c",
         "warnings.h": "c",
         "file.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "string.h": "c"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/gcc"
 }
