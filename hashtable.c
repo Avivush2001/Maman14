@@ -37,8 +37,7 @@ int lookUpTable(SymbolHashTable *table, char *name) {
     int hash, i, key, index;
     index = NOT_FOUND;
     key = generateKey(name);
-
-    for(i = 0; i < HASHSIZE; i++) {
+    ITIRATE_HASHES {
         hash = generateHash(key, i);
         if(!strcmp(table->items[hash].name, name)) {
             index = hash;
@@ -59,7 +58,7 @@ int insertToTable(SymbolHashTable *table, char *name) {
     int hash, i, key, index;
     key = generateKey(name);
     index = NOT_FOUND;
-    for(i = 0; i < HASHSIZE; i++) {
+    ITIRATE_HASHES {
         hash = generateHash(key, i);
         if(table->items[hash].name == NULL) {
             table->items[hash].name = name;
@@ -70,4 +69,15 @@ int insertToTable(SymbolHashTable *table, char *name) {
     }
     if (table->itemCount == (HASHSIZE)) table->flag = hashTableFull;
     return index;
+}
+
+/*Frees hashtable items' names. It's the responsibility of other functions to 
+free the pointer and its contents.*/
+SymbolHashTable *freeTableNames(SymbolHashTable *table) {
+    int i;
+    char* name;
+    ITIRATE_HASHES {
+        if ((name = table->items[i].name) != NULL) free(name);
+    }
+    return table;
 }

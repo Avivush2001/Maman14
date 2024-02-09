@@ -41,9 +41,5 @@ typedef struct {
     Attribute attr;
 } Symbol;
 
-typedef struct {
-    char *name;
-    char *line;
-    Macro *nextLine;
-} Macro;
+
 

@@ -3,8 +3,11 @@
 
 
 int main() {
-    FILE *fp;
-    fp = createFileWithSuffix("aviv.barak", "etedgui");
+    SymbolHashTable macroHashTable;
+    FILE *fp, *nfp;
+    fp = fopen("testPA1.as", "r");
+    nfp = preassembler(fp, "testPA1.am", &macroHashTable);
     fclose(fp);
-    return 0;
+    fclose(nfp);
+    freeTableNames(&macroHashTable);
 }
