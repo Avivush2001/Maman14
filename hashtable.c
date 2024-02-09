@@ -2,15 +2,20 @@
 
 /*Initialize a hashtable by setting the itemCount to 0 and the flag to hashTableFree*/
 SymbolHashTable *initializeHashTable(SymbolHashTable *table) {
+    int i;
+    ITIRATE_HASHES {
+        table->items[i].name = MALLOC_LABEL;
+        *table->items[i].name = '\0';
+    }
     table->itemCount = 0;
     table->flag = hashTableFree;
+    return table;
 }
 /*The function Generates a key by summing up the characters in the string*/
 int generateKey(char *name) {
-    int key, i, size;
+    int key;
     key = 0;
-    size = strlen(name);
-    for (i = 0; i < size; i++) key += name[i];
+    while(*name != '\0') key += *(name++);
     return key;
 }
 
@@ -56,18 +61,20 @@ searches the table for a free place to put the name. It also updates the item co
 */
 int insertToTable(SymbolHashTable *table, char *name) {
     int hash, i, key, index;
+    char *tableName;
     key = generateKey(name);
     index = NOT_FOUND;
     ITIRATE_HASHES {
         hash = generateHash(key, i);
-        if(table->items[hash].name == NULL) {
-            table->items[hash].name = name;
+        if(*(tableName = table->items[hash].name) == '\0') {
+            table->items[hash].name = strcpy(tableName, name);
             table->itemCount++;
             index = hash;
             break;
         }
     }
     if (table->itemCount == (HASHSIZE)) table->flag = hashTableFull;
+    
     return index;
 }
 
@@ -77,7 +84,8 @@ SymbolHashTable *freeTableNames(SymbolHashTable *table) {
     int i;
     char* name;
     ITIRATE_HASHES {
-        if ((name = table->items[i].name) != NULL) free(name);
+        name = table->items[i].name;
+        free(name);
     }
     return table;
 }

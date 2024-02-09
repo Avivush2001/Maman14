@@ -14,7 +14,7 @@ typedef struct {
 typedef struct {
     HashTableItem items[HASHSIZE];
     /*THESE TWO FIELDS MUST BE SET UP WHEN BEFORE USING ANY OF THE FUNCTIONS BELOW*/
-    unsigned itemCount : 8;
+    unsigned itemCount;
     HashTableFlags flag;
 } SymbolHashTable;
 

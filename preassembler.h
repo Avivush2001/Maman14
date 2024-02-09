@@ -3,6 +3,7 @@
 #define MACRO_DEF "mcr"
 #define MACRO_END "endmcr"
 #define MACRO_AT_INDEX macroTable->items[indexOfMacro].item
+#define MACRO_NAME_AT_INDEX macroTable->items[indexOfMacro].name
 #define COMPARE_MACRO_END !strcmp(field1,MACRO_END)
 #define DEFAULT_CONTEXT_PA contextFlag = readingLine
 #define ERROR_CASE_PA(_flag, _errorMessege) ERROR_CASE("pre assembler", _flag, _errorMessege)\

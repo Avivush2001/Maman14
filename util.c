@@ -1,13 +1,12 @@
 #include "data.h"
 
-
-
+extern char * operationsArr[];
+extern char * registersArr[];
+extern char * instructionArr[];
 /*
 THESE ARE TEMPORARY UPDATE THEM AND THEIR FUNCTIONS WITH THE PROPER STRUCTS
 */
-char * operationsArr[] = {"mov", "cmp", "add", "sub", "not", "clr","lea", "inc", "dec", "jmp", "bne", "red", "prn", "jsr", "rts", "hlt"};
-char * registersArr[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
-char * instructionArr[] = {".data",".string", ".entry" ,".extern", MACRO_DEF, MACRO_END};
+
 
 /*
 Given a string, a string array and its size, it checks if the string is in the array.
@@ -45,7 +44,7 @@ Bool isLabelLegal(char *label) {
     int i, size;
     size = strlen(label);
     ans = True;
-    if (isPreservedWord(label) == True || !isalpha(label[0]) || size > MAX_LABEL_SIZE) ans = False;
+    if (isPreservedWord(label) || !isalpha(label[0]) || size > MAX_LABEL_SIZE) ans = False;
     else {
         for (i = 1; i < size; i++) {
             if (!isalpha(label[i]) && !isdigit(label[i])) {
