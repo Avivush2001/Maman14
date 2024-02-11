@@ -12,3 +12,7 @@
 fprintf(stderr,"At line %d in file %s: %s",lineCounter, fileName, _errorMessege);
 #define ERROR_CASE(_stage,_flag, _errorMessege) case _flag:\
 PRINT_ERROR(_stage, _errorMessege);
+#define PRINT_WARNING(_stage,_errorMessege) fprintf(stderr,"Warning encountered during %s stage!\n", _stage);\
+fprintf(stderr,"At line %d in file %s: %s",lineCounter, fileName, _errorMessege);
+#define WARNING_CASE(_stage,_flag, _errorMessege) case _flag:\
+PRINT_WARNING(_stage, _errorMessege);

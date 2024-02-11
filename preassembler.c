@@ -100,7 +100,7 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
             }
             /*Add all the lines from the macro into the file using the 
             index we got when getting the line context indexOfMacro (step 5)*/
-            case macroCall: {
+            case macroCall: 
                 macptr = MACRO_AT_INDEX;
                 while(macptr->nextLine != NULL) {
                     fputs(macptr->line, nfp);
@@ -108,9 +108,9 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
                 }
                 DEFAULT_CONTEXT_PA;
                 break;
-            }
+            
             /*Add the macro to the table (steps 6 and 7)*/
-            case macroDefinitionStarted: {
+            case macroDefinitionStarted: 
                 contextFlag = canDefineMacro(field2, stringCounter, macroTable);
                 if (contextFlag == macroDefinitionStarted) {
                     contextFlag = macroDefinitionOngoing;
@@ -121,9 +121,9 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
                     freeField2 = False;
                 }
                 break;
-            }
+            
             /*Add the line to the macr (step 8)*/
-            case macroDefinitionOngoing: {
+            case macroDefinitionOngoing: 
                 macptr->line = line;
                 nextMac = malloc(sizeof(Macro));
                 nextMac->name = macptr->name;
@@ -131,14 +131,14 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
                 macptr = nextMac;
                 freeLine = False;
                 break;
-            }
-            /*Dont do anything for skipMacroDefinition*/
-            case skipMacroDefinition: break;
-            /*Dont do anything but change the context for skipUndefinedMacro, macroDefinitionEnded*/
-            default: {
+            
+            /*Dont do anything but change the context for macroDefinitionEnded*/
+            case macroDefinitionEnded: 
                 DEFAULT_CONTEXT_PA;
                 break;
-            }
+            /*Dont do anything for skipMacroDefinition and skipUndefinedMacro*/
+            default: break;
+            
         }
         /*Handle errors (step 9)*/
         errorFlagPA = errorHandler(&contextFlag, errorFlagPA,lineCounter, fileName);
@@ -195,7 +195,7 @@ PreassemblerFlags lineContext(PreassemblerFlags currentFlag, char *field1, int *
 macroCall. If it didn't find it, but the label is legal (meaning it is a viable macro name)
 then this is an undefined macro call, so skip it. otherwise add the line*/
 PreassemblerFlags checkForMacroCall(char *field, int *indexOfMacro, SymbolHashTable *macroTable) {
-    PreassemblerFlags newFlag;  
+    PreassemblerFlags newFlag;
     if ((*indexOfMacro = lookUpTable(macroTable, field)) != NOT_FOUND) newFlag = macroCall;
     else if (isLabelLegal(field)) newFlag = skipUndefinedMacro;
     else newFlag = addLine;
@@ -228,6 +228,7 @@ PreassemblerFlags errorHandler(PreassemblerFlags *contextFlag, PreassemblerFlags
         ERROR_CASE_PA(errorMacroNameIllegal, "Macro name is illegal.\n")
         ERROR_CASE_PA(errorMacroHashTableFull, "Hash table is full.\n")
         ERROR_CASE_PA(errorMacroNameAlreadyDefined, "Macro name is already defined.\n")
+        WARNING_CASE_PA(skipUndefinedMacro, "Tried to call to and undefined macro, call skipped.\n")
         default: break;
     }
     return newFlag;

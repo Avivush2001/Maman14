@@ -10,6 +10,9 @@
 newFlag = errorEncounteredPA;\
 *contextFlag = skipMacroDefinition;\
 break;
+#define WARNING_CASE_PA(_flag, _errorMessege) WARNING_CASE("pre assembler", _flag, _errorMessege)\
+*contextFlag = readingLine;\
+break;
 
 /*structures*/
 
