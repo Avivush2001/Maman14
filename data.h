@@ -10,4 +10,5 @@
 #include "file.h"
 #include "hashtable.h"
 #include "preassembler.h"
+#include "stageOne.h"
 

@@ -1,6 +1,6 @@
 
 
-enum Registers {
+typedef enum {
     R0 = 0x0,
     R1 = 0x1,
     R2 = 0x2,
@@ -9,19 +9,12 @@ enum Registers {
     R5 = 0x5,
     R6 = 0x6,
     R7 = 0x7
-};
+} Registers;
 
+/*Attribute of the symbol.*/
 typedef enum {
-    _A = 1,
-    _r = 3,
-    _E = 2
-} ARE;
-
-typedef enum {
-    entry,
     code,
     data,
-    string,
     external
 } Attribute;
 
@@ -29,5 +22,10 @@ typedef enum {
     immediate = 0,
     direct = 1,
     index = 2,
-    reg = 3
+    reg = 3,
+    dataWord
 } Addressing;
+
+typedef enum {
+    code12
+} Opcodes;
