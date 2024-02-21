@@ -1,10 +1,4 @@
 #include "data.h"
-/***************TODO LIST****************/
-/*
--Add function prototypes
--try to split the main preassembler function to different functions
--Add free the macro function
-*/
 
 /*
 Instructions for macros and the pre assembler:
@@ -79,7 +73,6 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
     /*Intigers setup*/
     lineCounter = 1;
     indexOfMacro = NOT_FOUND;
-    
     /*Main loop (step 1)*/
     while(fgets(line, MAX_LINE_LENGTH, fp) != NULL) {
         /*Memory allocations and reading the first two fields (step 2)*/
@@ -107,6 +100,7 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
                     macptr = macptr->nextLine;
                 }
                 DEFAULT_CONTEXT_PA;
+                
                 break;
             
             /*Add the macro to the table (steps 6 and 7)*/
@@ -129,6 +123,7 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
                 nextMac->name = macptr->name;
                 macptr->nextLine = nextMac;
                 macptr = nextMac;
+                macptr->nextLine = NULL;
                 freeLine = False;
                 break;
             
@@ -158,6 +153,7 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
     }
     free(line);
     macroTable = freeMacrosFromTable(macroTable);
+    
     return nfp;
 }
 /*
@@ -255,7 +251,7 @@ Macro *freeMacros(Macro *macptr) {
     Macro *nextMac;
     line = macptr->line;
     nextMac = macptr->nextLine;
-    if (line != NULL) {
+    if (nextMac != NULL) {
         nextMac = freeMacros(nextMac);
         free(line);
         free(nextMac);

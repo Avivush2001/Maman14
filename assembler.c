@@ -9,7 +9,6 @@ int main() {
     FILE *fp, *nfp;
     /*Operation operation1 = {"code", code, {True,True,True,True},{True,True,True,True} , 0},
      operation2 = {"code2", code, {True,True,True,True},{True,True,True,True} , 0};*/
-    
     macroHashTable = malloc(sizeof(SymbolHashTable));
     fp = fopen("test1PA.as", "r");
     nfp = preassembler(fp, "test1PA.am", macroHashTable);

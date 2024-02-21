@@ -1,12 +1,19 @@
 {
     "files.associations": {
+        "*.ejs": "html",
         "stdarg.h": "c",
         "constants.h": "c",
         "data.h": "c",
         "warnings.h": "c",
         "file.h": "c",
         "typeinfo": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "string": "c",
+        "vector": "c",
+        "memory": "c",
+        "optional": "c",
+        "string_view": "c",
+        "system_error": "c"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/gcc"
 }

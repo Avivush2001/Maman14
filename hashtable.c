@@ -4,8 +4,9 @@
 SymbolHashTable *initializeHashTable(SymbolHashTable *table) {
     int i;
     ITIRATE_HASHES {
-        table->items[i].name = MALLOC_LABEL;
-        *table->items[i].name = '\0';
+        TABLE_NAME_AT(i) = MALLOC_LABEL;
+        *TABLE_NAME_AT(i) = '\0';
+        ITEM_AT_INDEX = NULL;
     }
     table->itemCount = 0;
     table->flag = hashTableFree;
@@ -44,7 +45,7 @@ int lookUpTable(SymbolHashTable *table, char *name) {
     key = generateKey(name);
     ITIRATE_HASHES {
         hash = generateHash(key, i);
-        if(!strcmp(table->items[hash].name, name)) {
+        if(!strcmp(TABLE_NAME_AT(hash), name)) {
             index = hash;
             break;
         }
@@ -61,13 +62,13 @@ searches the table for a free place to put the name. It also updates the item co
 */
 int insertToTable(SymbolHashTable *table, char *name) {
     int hash, i, key, index;
-    char *tableName;
     key = generateKey(name);
     index = NOT_FOUND;
     ITIRATE_HASHES {
         hash = generateHash(key, i);
-        if(*(tableName = table->items[hash].name) == '\0') {
-            table->items[hash].name = strcpy(tableName, name);
+        if(*TABLE_NAME_AT(hash) == '\0') {
+            
+            TABLE_NAME_AT(hash) = strcpy(TABLE_NAME_AT(hash), name);
             table->itemCount++;
             index = hash;
             break;
@@ -84,8 +85,8 @@ SymbolHashTable *freeTableNames(SymbolHashTable *table) {
     int i;
     char* name;
     ITIRATE_HASHES {
-        name = table->items[i].name;
-        free(name);
+        if ((name = TABLE_NAME_AT(i)) != NULL)
+            free(name);
     }
     return table;
 }
