@@ -1,13 +1,109 @@
 #include "data.h"
 
-extern char * operationsArr[];
-extern char * registersArr[];
-extern char * instructionArr[];
-/*
-THESE ARE TEMPORARY UPDATE THEM AND THEIR FUNCTIONS WITH THE PROPER STRUCTS
-*/
-
-
+/*Can't be initialized another way besides allocating memmory.*/
+/*Holds the operations. Also each index represents each operation's opcode*/
+Operation operationsArr[] = {
+    {
+        "mov",
+        {True,True,True,True},
+        {False,True,True,True},
+        2
+    },
+    {
+        "cmp",
+        {True,True,True,True},
+        {True,True,True,True},
+        2
+    },
+    {
+        "add",
+        {True,True,True,True},
+        {False,True,True,True},
+        2
+    },
+    {
+        "sub",
+        {True,True,True,True},
+        {False,True,True,True},
+        2
+    },
+    {
+        "not",
+        {False,False,False,False},
+        {False,True,True,True},
+        1
+    },
+    {
+        "clr",
+        {False,False,False,False},
+        {False,True,True,True},
+        1
+    },
+    {
+        "lea",
+        {False,True,True,False},
+        {False,True,True,True},
+        2
+    },
+    {
+        "inc",
+        {False,False,False,False},
+        {False,True,True,True},
+        1
+    },
+    {
+        "dec",
+        {False,False,False,False},
+        {False,True,True,True},
+        1
+    },
+    {
+        "jmp",
+        {False,False,False,False},
+        {False,True,False,True},
+        1
+    },
+    {
+        "bne",
+        {False,False,False,False},
+        {False,True,False,True},
+        1
+    },
+    {
+        "red",
+        {False,False,False,False},
+        {False,True,True,True},
+        1
+    },
+    {
+        "prn",
+        {False,False,False,False},
+        {True,True,True,True},
+        1
+    },
+    {
+        "jsr",
+        {False,False,False,False},
+        {False,True,False,True},
+        1
+    },
+    {
+        "rts",
+        {False,False,False,False},
+        {False,False,False,False},
+        0
+    },
+    {
+        "hlt",
+        {False,False,False,False},
+        {False,False,False,False},
+        0
+    }
+};
+/*These hold the strings of the registers and other reserved words. For the
+registers array, each index represents its number.*/
+char * registersArr[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
+char * instructionArr[] = {".data",".string", ".entry" ,".extern", MACRO_DEF, MACRO_END};
 /*
 Given a string, a string array and its size, it checks if the string is in the array.
 If it is 'index' is updated. If not index stays NOT_FOUND. Returns the index.
@@ -17,6 +113,17 @@ int findInStringArray(char* word, char *arr[], int size) {
     index = NOT_FOUND;
     for (i = 0; i < size; i++) {
         if (!strcmp(word, arr[i])) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+int findInOperationsArray(char* word) {
+    int index, i;
+    index = NOT_FOUND;
+    for (i = 0; i < OPERATIONS_SIZE; i++) {
+        if (!strcmp(word, operationsArr[i].name)) {
             index = i;
             break;
         }
@@ -64,7 +171,7 @@ In the end ans is returned.
 Bool isPreservedWord(char *label) {
     Bool ans;
     ans = False;
-    if (findInStringArray(label, operationsArr, OPERATIONS_SIZE) != NOT_FOUND) ans = True;
+    if (findInOperationsArray(label) != NOT_FOUND) ans = True;
     else if (findInStringArray(label, registersArr, REGISTERS_SIZE) != NOT_FOUND) ans = True;
     else if (findInStringArray(label, instructionArr, INSTRUCTIONS_SIZE) != NOT_FOUND) ans = True;
     return ans;

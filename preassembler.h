@@ -2,6 +2,8 @@
 
 #define MACRO_DEF "mcr"
 #define MACRO_END "endmcr"
+#define FAILED_MALLOC_PA contextFlag = errorEncounteredPA
+#define MALLOC_MACRO malloc(sizeof(Macro))
 #define MACRO_AT_INDEX macroTable->items[indexOfMacro].item
 #define MACRO_NAME_AT_INDEX macroTable->items[indexOfMacro].name
 #define COMPARE_MACRO_END !strcmp(field1,MACRO_END)
@@ -9,6 +11,9 @@
 #define ERROR_CASE_PA(_flag, _errorMessege) ERROR_CASE("pre assembler", _flag, _errorMessege)\
 newFlag = errorEncounteredPA;\
 *contextFlag = skipMacroDefinition;\
+break;
+#define FATAL_ERROR_CASE_PA(_flag, _errorMessege) ERROR_CASE("pre assembler", _flag, _errorMessege)\
+newFlag = errorEncounteredPA;\
 break;
 #define WARNING_CASE_PA(_flag, _errorMessege) WARNING_CASE("pre assembler", _flag, _errorMessege)\
 *contextFlag = readingLine;\

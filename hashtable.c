@@ -4,12 +4,9 @@
 SymbolHashTable *initializeHashTable(SymbolHashTable *table) {
     int i;
     ITIRATE_HASHES {
-        TABLE_NAME_AT(i) = MALLOC_LABEL;
-        *TABLE_NAME_AT(i) = '\0';
+        TABLE_NAME_AT(i) = "\0";
         ITEM_AT_INDEX = NULL;
     }
-    table->itemCount = 0;
-    table->flag = hashTableFree;
     return table;
 }
 /*The function Generates a key by summing up the characters in the string*/
@@ -67,10 +64,11 @@ int insertToTable(SymbolHashTable *table, char *name) {
     ITIRATE_HASHES {
         hash = generateHash(key, i);
         if(*TABLE_NAME_AT(hash) == '\0') {
-            
-            TABLE_NAME_AT(hash) = strcpy(TABLE_NAME_AT(hash), name);
-            table->itemCount++;
-            index = hash;
+            if ((TABLE_NAME_AT(hash) = MALLOC_LABEL) != NULL) {
+                TABLE_NAME_AT(hash) = strcpy(TABLE_NAME_AT(hash), name);
+                table->itemCount++;
+                index = hash;
+            }
             break;
         }
     }
@@ -85,7 +83,7 @@ SymbolHashTable *freeTableNames(SymbolHashTable *table) {
     int i;
     char* name;
     ITIRATE_HASHES {
-        if ((name = TABLE_NAME_AT(i)) != NULL)
+        if (*(name = TABLE_NAME_AT(i)) != '\0')
             free(name);
     }
     return table;

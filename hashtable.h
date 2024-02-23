@@ -14,7 +14,7 @@ typedef struct {
 } HashTableItem;
 /*A struct that holds an array of hash table items, a count of their items, and a flag*/
 typedef struct {
-    HashTableItem items[HASHSIZE];
+    HashTableItem *items;
     /*THESE TWO FIELDS MUST BE SET UP WHEN BEFORE USING ANY OF THE FUNCTIONS BELOW*/
     unsigned itemCount;
     HashTableFlags flag;
