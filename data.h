@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <math.h>
 #include "constants.h"
 #include "enums.h"
 #include "structures.h"

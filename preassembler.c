@@ -75,8 +75,8 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
     macroTable = initializeHashTable(macroTable);
     /*Line memory allocation*/
     if ((line = MALLOC_LINE) == NULL ||  nfp == NULL) {
-        printf("Fatal error during pre assembler stage.\nEither failed to create %s or couldn't allocate memmory. Stopping stage.\n", fileName);
-        contextFlag = errorEncounteredPA;
+        fprintf(stderr,"Fatal error during pre assembler stage.\nEither failed to create %s or couldn't allocate memmory. Stopping stage.\n", fileName);
+        FAILED_MALLOC_PA;
         errorFlagPA = contextFlag;
     }
 
