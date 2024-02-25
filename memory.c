@@ -1,6 +1,6 @@
 #include "data.h"
 
-BinaryWord *memory[ADRESSES_ALOWED];
+BinaryWord *memory[ADRESSES_ALOWED]; /*REMEMBER TO INITIALIZE WITH NULLs*/
 int IC = 0, DC = 0;
 DataWord *headData = NULL, *tailData = NULL;
 
@@ -9,7 +9,7 @@ MemoryFlags insertDataWord(int data) {
     DataWord *dataWordd;
     dataFlag = getDataFlag(data);
     dataWordd = malloc(sizeof(DataWord));
-    CHECK_MEMMORY_ALLOC_ERROR(dataWordd, dataFlag);
+    CHECK_MEMORY_ALLOC_ERROR(dataWordd, dataFlag);
     if (dataFlag == memoryAvailable) {
         dataWordd->data = data;
         dataWordd->type = dataWord;
@@ -44,8 +44,8 @@ MemoryFlags insertOperation(Operation *op, void *field1, void *field2, int field
 MemoryFlags insertOpBin(OperationWord *op) {
     MemoryFlags binFlag;
     CREATE_NEW_BINARY_WORD;
-    GET_MEMMORY_STATUS(binFlag)
-    CHECK_MEMMORY_ALLOC_ERROR(newBinaryWord, binFlag)
+    GET_MEMORY_STATUS(binFlag)
+    CHECK_MEMORY_ALLOC_ERROR(newBinaryWord, binFlag)
     if (binFlag == memoryAvailable) {
         newBinaryWord->parallelWord = op;
         newBinaryWord->bits[WORD_LENGTH] = '\0';
@@ -91,7 +91,7 @@ void insertIntoBinaryWord(BinaryWord *newBinaryWord, unsigned data, int index, i
 
 MemoryFlags getDataFlag(int data) {
     MemoryFlags status;
-    GET_MEMMORY_STATUS(status)
+    GET_MEMORY_STATUS(status)
     if (data > MAX_DATA || data < MIN_DATA) status = illegalData;
     return status;
 }

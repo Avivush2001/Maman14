@@ -1,7 +1,7 @@
-#define CHECK_MEMMORY_ALLOC_ERROR(_word, _flag) if (_word == NULL) \
+#define CHECK_MEMORY_ALLOC_ERROR(_word, _flag) if (_word == NULL) \
 _flag = memoryAllocationError;
 #define CREATE_NEW_BINARY_WORD BinaryWord *newBinaryWord = malloc(sizeof(BinaryWord))
-#define GET_MEMMORY_STATUS(_flag) if ((IC + DC) >= RAM_SIZE) _flag = memoryFull; \
+#define GET_MEMORY_STATUS(_flag) if ((IC + DC) >= RAM_SIZE) _flag = memoryFull; \
 else _flag = memoryAvailable;
 
 
