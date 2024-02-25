@@ -23,6 +23,7 @@ MemmoryFlags insertDataWord(int data) {
 }
 
 /*This assumes the operation word and fields are correct.*/
+/*HANDLE CASE OF SYMBOL*/
 MemmoryFlags insertOperation(OperationWord *op, int field1, int field2, int fields) {
     MemmoryFlags insertFlag;
     insertFlag = insertOpBin(op);

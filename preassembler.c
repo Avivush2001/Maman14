@@ -119,6 +119,7 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
             /*Add the macro to the table (steps 6 and 7)*/
             case macroDefinitionStarted: 
                 contextFlag = canDefineMacro(field2, stringCounter, macroTable);
+                
                 if (contextFlag == macroDefinitionStarted) {
                     contextFlag = macroDefinitionOngoing;
                     if((indexOfMacro = insertToTable(macroTable, field2)) == NOT_FOUND || (macptr = MALLOC_MACRO) != NULL) {

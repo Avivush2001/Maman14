@@ -6,21 +6,7 @@ HashTableItem macroItems[HASHSIZE];
 
     /*Operation operation1 = {"code", code, {True,True,True,True},{True,True,True,True} , 0},
      operation2 = {"code2", code, {True,True,True,True},{True,True,True,True} , 0};*/
-/*int main() {
-    SymbolHashTable *macroHashTable;
-    FILE *fp, *nfp;
 
-    macroHashTable = malloc(sizeof(SymbolHashTable));
-    fp = fopen("test1PA.as", "r");
-    nfp = preassembler(fp, "test1PA.am", macroHashTable);
-    if (fp != nfp) {
-        fclose(nfp);
-    }
-    fclose(fp);
-    freeTableNames(macroHashTable);
-    free(macroHashTable);
-    return 0;
-}*/
 int main() {
     /*Can't be initialized another way besides allocating memmory.*/
     SymbolHashTable macroHashTable = {macroItems, 0, hashTableFree};
