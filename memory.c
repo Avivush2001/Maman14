@@ -1,16 +1,16 @@
 #include "data.h"
 
-BinaryWord *memmory[ADRESSES_ALOWED];
+BinaryWord *memory[ADRESSES_ALOWED];
 int IC = 0, DC = 0;
 DataWord *headData = NULL, *tailData = NULL;
 
-MemmoryFlags insertDataWord(int data) {
-    MemmoryFlags dataFlag;
+MemoryFlags insertDataWord(int data) {
+    MemoryFlags dataFlag;
     DataWord *dataWordd;
     dataFlag = getDataFlag(data);
     dataWordd = malloc(sizeof(DataWord));
     CHECK_MEMMORY_ALLOC_ERROR(dataWordd, dataFlag);
-    if (dataFlag == memmoryAvailable) {
+    if (dataFlag == memoryAvailable) {
         dataWordd->data = data;
         dataWordd->type = dataWord;
         if (headData == NULL){
@@ -23,10 +23,11 @@ MemmoryFlags insertDataWord(int data) {
 }
 
 /*This assumes the operation word and fields are correct.*/
-/*HANDLE CASE OF SYMBOL*/
-MemmoryFlags insertOperation(OperationWord *op, int field1, int field2, int fields) {
-    MemmoryFlags insertFlag;
-    insertFlag = insertOpBin(op);
+/*
+TODO: instead of being given a number, give a pointer to a struct of each type of possibe adrressing type.
+*/
+MemoryFlags insertOperation(Operation *op, void *field1, void *field2, int fields) {
+    MemoryFlags insertFlag;
     if (insertFlag == wordCreationSuccess) {
         switch (fields) {
             case 1:
@@ -40,12 +41,12 @@ MemmoryFlags insertOperation(OperationWord *op, int field1, int field2, int fiel
     return insertFlag;
 }
 /*This assumes the operation word is correct.*/
-MemmoryFlags insertOpBin(OperationWord *op) {
-    MemmoryFlags binFlag;
+MemoryFlags insertOpBin(OperationWord *op) {
+    MemoryFlags binFlag;
     CREATE_NEW_BINARY_WORD;
     GET_MEMMORY_STATUS(binFlag)
     CHECK_MEMMORY_ALLOC_ERROR(newBinaryWord, binFlag)
-    if (binFlag == memmoryAvailable) {
+    if (binFlag == memoryAvailable) {
         newBinaryWord->parallelWord = op;
         newBinaryWord->bits[WORD_LENGTH] = '\0';
         insertIntoBinaryWord(newBinaryWord, 0, 0, 4);
@@ -53,7 +54,7 @@ MemmoryFlags insertOpBin(OperationWord *op) {
         insertIntoBinaryWord(newBinaryWord, op->src, 8, 2);
         insertIntoBinaryWord(newBinaryWord, op->dst, 10, 2);
         insertIntoBinaryWord(newBinaryWord, op->are, 12, 2);
-        memmory[IC++] = newBinaryWord;
+        memory[IC++] = newBinaryWord;
         binFlag = wordCreationSuccess;
     }
     return binFlag;
@@ -88,8 +89,8 @@ void insertIntoBinaryWord(BinaryWord *newBinaryWord, unsigned data, int index, i
     }
 }
 
-MemmoryFlags getDataFlag(int data) {
-    MemmoryFlags status;
+MemoryFlags getDataFlag(int data) {
+    MemoryFlags status;
     GET_MEMMORY_STATUS(status)
     if (data > MAX_DATA || data < MIN_DATA) status = illegalData;
     return status;

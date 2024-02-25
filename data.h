@@ -11,5 +11,5 @@
 #include "file.h"
 #include "hashtable.h"
 #include "preassembler.h"
-#include "memmory.h"
+#include "memory.h"
 #include "stageOne.h"

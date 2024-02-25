@@ -8,7 +8,7 @@ HashTableItem macroItems[HASHSIZE];
      operation2 = {"code2", code, {True,True,True,True},{True,True,True,True} , 0};*/
 
 int main() {
-    /*Can't be initialized another way besides allocating memmory.*/
+    /*Can't be initialized another way besides allocating memory.*/
     SymbolHashTable macroHashTable = {macroItems, 0, hashTableFree};
     FILE *fp, *nfp;
    

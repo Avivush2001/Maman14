@@ -1,13 +1,13 @@
 #define CHECK_MEMMORY_ALLOC_ERROR(_word, _flag) if (_word == NULL) \
-_flag = memmoryAllocationError;
+_flag = memoryAllocationError;
 #define CREATE_NEW_BINARY_WORD BinaryWord *newBinaryWord = malloc(sizeof(BinaryWord))
-#define GET_MEMMORY_STATUS(_flag) if ((IC + DC) >= RAM_SIZE) _flag = memmoryFull; \
-else _flag = memmoryAvailable;
+#define GET_MEMMORY_STATUS(_flag) if ((IC + DC) >= RAM_SIZE) _flag = memoryFull; \
+else _flag = memoryAvailable;
 
 
 
 /*
-The way I chose to handle the memmory is as follows:
+The way I chose to handle the memory is as follows:
 The struct that represents binary words are chars of ones and zeroes in length 14,
 and they hold also hold a pointer to a parallel word.
 The structs that represent those words are different for each word type:
@@ -66,10 +66,10 @@ typedef struct {
  } BinaryWord;
 
  typedef enum {
-   memmoryFull,
-   memmoryAvailable,
+   memoryFull,
+   memoryAvailable,
    illegalData,
    wordCreationSuccess,
-   memmoryAllocationError
- } MemmoryFlags;
+   memoryAllocationError
+ } MemoryFlags;
 

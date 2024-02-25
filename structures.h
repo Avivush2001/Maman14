@@ -11,7 +11,10 @@ typedef struct {
     Bool entry;
     Attribute attr;
 } Symbol;
-
+/**********TODO**********/
+/*
+Create structures for each type of adressing.
+*/
 
 
 

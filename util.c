@@ -1,6 +1,6 @@
 #include "data.h"
 
-/*Can't be initialized another way besides allocating memmory.*/
+/*Can't be initialized another way besides allocating memory.*/
 /*Holds the operations. Also each index represents each operation's opcode*/
 Operation operationsArr[] = {
     {

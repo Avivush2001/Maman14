@@ -16,7 +16,7 @@
         "system_error": "c",
         "hashtable.h": "c",
         "structures.h": "c",
-        "memmory.h": "c",
+        "memory.h": "c",
         "array": "c",
         "initializer_list": "c",
         "ctype.h": "c"
