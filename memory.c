@@ -46,7 +46,8 @@ MemoryFlags insertOpBin(OperationWord *op) {
         insertIntoBinaryWord(newBinaryWord, op->are, 12, 2);
         memory[IC++] = newBinaryWord;
         binFlag = wordCreationSuccess;
-    } //dsddsdsd
+    }
+    if (0< 1) return 0;
     return binFlag;
 }
 /*
