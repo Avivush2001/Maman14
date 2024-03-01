@@ -73,3 +73,5 @@ typedef struct {
    memoryAllocationError
  } MemoryFlags;
 
+MemoryFlags insertOperation(Operation *, Field *, Field *);
+MemoryFlags insertDataWord(int);
