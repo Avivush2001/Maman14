@@ -1,6 +1,6 @@
 #define RAM_SIZE 4096
-#define STARTING_ADRESS 100
-#define ADRESSES_ALOWED RAM_SIZE-STARTING_ADRESS
+#define STARTING_ADDRESS 100
+#define ADDRESSES_ALLOWED RAM_SIZE-STARTING_ADDRESS
 #define MAX_LINE_LENGTH 81
 #define MAX_LABEL_SIZE 32
 #define WORD_LENGTH 14
@@ -18,14 +18,14 @@
 #define MALLOC_LABEL malloc(sizeof(char) * MAX_LABEL_SIZE)
 #define READ_FIRST_TWO_FIELDS sscanf(line, "%31s %31s", field1, field2)
 
-#define PRINT_ERROR(_stage,_errorMessege) fprintf(stderr,"Error encountered during %s stage!\n", _stage);\
-fprintf(stderr,"At line %d in file %s: %s",lineCounter, fileName, _errorMessege);
+#define PRINT_ERROR(_stage,_errorMessage) fprintf(stderr,"Error encountered during %s stage!\n", _stage);\
+fprintf(stderr,"At line %d in file %s: %s",lineCounter, fileName, _errorMessage);
 
-#define ERROR_CASE(_stage,_flag, _errorMessege) case _flag:\
-PRINT_ERROR(_stage, _errorMessege);
+#define ERROR_CASE(_stage,_flag, _errorMessage) case _flag:\
+PRINT_ERROR(_stage, _errorMessage);
 
-#define PRINT_WARNING(_stage,_errorMessege) fprintf(stderr,"Warning encountered during %s stage!\n", _stage);\
-fprintf(stderr,"At line %d in file %s: %s",lineCounter, fileName, _errorMessege);
+#define PRINT_WARNING(_stage,_errorMessage) fprintf(stderr,"Warning encountered during %s stage!\n", _stage);\
+fprintf(stderr,"At line %d in file %s: %s",lineCounter, fileName, _errorMessage);
 
-#define WARNING_CASE(_stage,_flag, _errorMessege) case _flag:\
-PRINT_WARNING(_stage, _errorMessege);
+#define WARNING_CASE(_stage,_flag, _errorMessage) case _flag:\
+PRINT_WARNING(_stage, _errorMessage);

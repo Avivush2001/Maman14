@@ -1,6 +1,6 @@
 #include "data.h"
 
-BinaryWord *memory[ADRESSES_ALOWED]; /*REMEMBER TO INITIALIZE WITH NULLs*/
+BinaryWord *memory[ADDRESSES_ALLOWED]; /*REMEMBER TO INITIALIZE WITH NULLs*/
 int IC = 0, DC = 0;
 DataWord *headData = NULL, *tailData = NULL;
 
