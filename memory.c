@@ -24,20 +24,10 @@ MemoryFlags insertDataWord(int data) {
 
 /*This assumes the operation word and fields are correct.*/
 /*
-TODO: instead of being given a number, give a pointer to a struct of each type of possibe adrressing type.
+TODO: instead of being given a number, give a pointer to a struct of each field.
 */
-MemoryFlags insertOperation(Operation *op, void *field1, void *field2, int fields) {
+MemoryFlags insertOperation(Operation *op, Field *field1, Field *field2) {
     MemoryFlags insertFlag;
-    if (insertFlag == wordCreationSuccess) {
-        switch (fields) {
-            case 1:
-                break;
-            case 2:
-                break;
-            default:
-                break;
-        }
-    }
     return insertFlag;
 }
 /*This assumes the operation word is correct.*/

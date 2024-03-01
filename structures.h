@@ -11,10 +11,13 @@ typedef struct {
     Bool entry;
     Attribute attr;
 } Symbol;
-/**********TODO**********/
-/*
-Create structures for each type of adressing.
-*/
+
+/*The field struct is used for a memory function to insert operation binarys.*/
+typedef struct {
+    Addressing type;
+    char *name;
+    int value;
+} Field;
 
 
 
