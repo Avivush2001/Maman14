@@ -42,7 +42,7 @@ This is the algorithm:
 8 - Insert the line to the macro using the index found earlier, go to step 1.
 9 - Print an error message and change the context and error flags, go to step 1.
 */
-FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
+PreassemblerFlags preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
     
     /******Initializations*******/
     char *line, *field1, *field2; 
@@ -80,7 +80,7 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
         errorFlagPA = contextFlag;
     }
 
-    /*Intigers setup*/
+    /*Integers setup*/
     lineCounter = 1;
     indexOfMacro = NOT_FOUND;
 
@@ -171,15 +171,11 @@ FILE *preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
     }
 
     /*Delete the file that was created if an error was encountered.*/
-    if (errorFlagPA == errorEncounteredPA) {
-        fclose(nfp);
-        remove(fileName);
-        nfp = fp;
-    }
+    
     free(line);
     macroTable = freeMacrosFromTable(macroTable);
-    
-    return nfp;
+    fclose(nfp);
+    return errorFlagPA;
 }
 
 /*
@@ -231,7 +227,7 @@ PreassemblerFlags checkForMacroCall(char *field, int *indexOfMacro, SymbolHashTa
 
 /*Check for possible error before defining a macro.
 Possible errors are:
-no macro name given, label isn't legal, hashtable is full, macro name alread in the table.*/
+no macro name given, label isn't legal, hashtable is full, macro name already in the table.*/
 PreassemblerFlags canDefineMacro(char *macroName, int stringCount, SymbolHashTable *macroTable) {
     PreassemblerFlags newFlag;
     newFlag = macroDefinitionStarted;

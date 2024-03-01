@@ -16,7 +16,7 @@ typedef struct {
 typedef struct {
     Addressing type;
     char *name;
-    int value;
+    unsigned value;
 } Field;
 
 

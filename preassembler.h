@@ -53,7 +53,7 @@ typedef struct MacroStruct {
 /*Gets a pointer to the .as file, a new .am file name to give it, and a pointer to the
 macro hash table. Returns a pointer to the new .am file created or returns the
 pointer to the .as file if an error occured during the run.*/
-FILE *preassembler(FILE*,char*,SymbolHashTable*);
+PreassemblerFlags preassembler(FILE*,char*,SymbolHashTable*);
 
 /*Checks the context of a given line.*/
 PreassemblerFlags lineContext(PreassemblerFlags, char *, int *, SymbolHashTable *);
