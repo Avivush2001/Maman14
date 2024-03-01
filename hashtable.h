@@ -20,6 +20,11 @@ typedef struct {
     HashTableFlags flag;
 } SymbolHashTable;
 
+typedef struct {
+    SymbolHashTable *symbolTable;
+    SymbolHashTable *macroTable;
+} SystemTables;
+
 
 
 /*Initialize a hashtable*/
