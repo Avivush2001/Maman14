@@ -14,6 +14,5 @@ typedef enum {
     immediate = 0,
     direct = 1,
     index = 2,
-    reg = 3,
-    dataWord
+    reg = 3
 } Addressing;

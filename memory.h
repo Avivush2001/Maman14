@@ -24,7 +24,7 @@ else _flag = memoryAvailable;
 
  typedef struct BinaryWord{
    char bits[WORD_LENGTH + 1];
-   Symbol * possibleLabel;
+   char * possibleLabel;
    struct BinaryWord *nextData;
  } BinaryWord;
 

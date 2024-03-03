@@ -16,9 +16,12 @@ typedef struct {
 Note that when using a field that isn't a label, equal 'name' to NULL*/
 typedef struct {
     Addressing type;
-    Symbol *symbol;
+    char *symbol;
     unsigned value : 12;
 } Field;
+/*
+Add how to use the field struct
+*/
 
 
 

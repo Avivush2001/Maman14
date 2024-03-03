@@ -1,9 +1,10 @@
 #include "data.h"
 
+
+
 BinaryWord *memory[ADDRESSES_ALLOWED]; /*REMEMBER TO INITIALIZE WITH NULLs*/
 int IC = 0, DC = 0;
 BinaryWord *headData = NULL, *tailData = NULL;
-extern Operation operationsArr[];
 
 
 
@@ -39,7 +40,6 @@ Also note that it assumes that if the operation has just one field,
 field1 should point to NULL. If the operation needs fields, both
 fields should point to NULL */
 MemoryFlags insertOperation(int indexOfOp, Field *field1, Field *field2) {
-    Addressing typeOfField1, typeOfField2;
     MemoryFlags insertionFlag = memoryAvailable;
     insertionFlag = getInsertionFlag(field1,field2);
     if (insertionFlag == memoryAvailable){
@@ -102,7 +102,7 @@ MemoryFlags insertConstBin(unsigned co) {
     return insertionFlag;
 }
 
-MemoryFlags insertAddressBin(Symbol *symbol) {
+MemoryFlags insertAddressBin(char *symbol) {
     BinaryWord *newBinaryWord;
     MemoryFlags insertionFlag = memoryAvailable;
     newBinaryWord = malloc(sizeof(BinaryWord));
@@ -129,7 +129,7 @@ MemoryFlags insertRegisterBin(int reg1, int reg2) {
         insertIntoBinaryWord(newBinaryWord, 0, 0, 6);
         insertIntoBinaryWord(newBinaryWord, reg1, 6, 3);
         insertIntoBinaryWord(newBinaryWord, reg2, 9, 3);
-        insertIntoBinaryWord(newBinaryWord, reg, 12, 2);
+        insertIntoBinaryWord(newBinaryWord, immediate, 12, 2);
         newBinaryWord->possibleLabel = NULL;
         newBinaryWord->nextData = NULL;
         memory[IC++] = newBinaryWord;
@@ -138,7 +138,6 @@ MemoryFlags insertRegisterBin(int reg1, int reg2) {
     return insertionFlag;
 }
 /*
-
 The function gets the word, unsigned data, an index from which we will insert into the binary word,
 and the number of bits of the unsigned data's bit field.
 The algorithm to convert into a binary word is very simple:
