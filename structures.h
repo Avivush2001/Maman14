@@ -6,7 +6,7 @@ typedef struct {
 } Operation;
 
 typedef struct {
-    char *name;
+    char *symbol;
     int value;
     Bool entry;
     Attribute attr;
@@ -16,7 +16,7 @@ typedef struct {
 Note that when using a field that isn't a label, equal 'name' to NULL*/
 typedef struct {
     Addressing type;
-    char *name;
+    Symbol *symbol;
     unsigned value : 12;
 } Field;
 

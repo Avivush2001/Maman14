@@ -2,94 +2,140 @@
 
 BinaryWord *memory[ADDRESSES_ALLOWED]; /*REMEMBER TO INITIALIZE WITH NULLs*/
 int IC = 0, DC = 0;
-DataWord *headData = NULL, *tailData = NULL;
+BinaryWord *headData = NULL, *tailData = NULL;
 extern Operation operationsArr[];
 
+
+
+/*********TODO LIST*******/
+/*
+- initialization function to the memory.
+- free all memory function
+- add all data to the memory function
+- add a function that gets the Label 
+*/
+
+/*Assumes the data is correct and in the set range*/
 MemoryFlags insertDataWord(int data) {
     MemoryFlags dataFlag;
-    DataWord *dataWordd;
-    dataFlag = getDataFlag(data);
-    dataWordd = malloc(sizeof(DataWord));
+    BinaryWord *dataWordd;
+    GET_MEMORY_STATUS(dataFlag)
+    dataWordd = malloc(sizeof(BinaryWord));
     CHECK_MEMORY_ALLOC_ERROR(dataWordd, dataFlag);
     if (dataFlag == memoryAvailable) {
-        dataWordd->data = data;
+        insertIntoBinaryWord(dataWordd, data, 0, 14);
         if (headData == NULL){
             headData = dataWordd;
         } else tailData->nextData = dataWordd;
         tailData = dataWordd;
         dataFlag = wordCreationSuccess;
+        DC++;
     }
     return dataFlag;
 }
 
-/*This assumes the operation word and fields are correct.*/
-/*
-TODO: instead of being given a number, give a pointer to a struct of each field.
-*/
+/*This function assumes the operation word and fields are correct.
+Also note that it assumes that if the operation has just one field,
+field1 should point to NULL. If the operation needs fields, both
+fields should point to NULL */
 MemoryFlags insertOperation(int indexOfOp, Field *field1, Field *field2) {
-    Addressing typeOfField1 = field1->type, typeOfField2 = field2->type;
-    MemoryFlags insertionFlag;
-    BinaryWord *newBinaryWord;
-    OperationWord *newOperation;
-    AddressWord *addr;
-    RegisterWord regis = {field1->value, field2->value};
-    int availableMemory, memoryNeeded = 1;
-    availableMemory = ADDRESSES_ALLOWED - (IC + DC);
-    newBinaryWord = malloc(sizeof(BinaryWord));
-    GET_MEMORY_STATUS(insertionFlag)
-    CHECK_MEMORY_ALLOC_ERROR(newBinaryWord, insertionFlag)
-    if ((typeOfField1 == reg) && (typeOfField2 == reg)) memoryNeeded++;
-    else {
-        if (typeOfField1 == index) memoryNeeded+=2;
-        else memoryNeeded++;
-        if (typeOfField2 == index) memoryNeeded+=2;
-        else memoryNeeded++;
+    Addressing typeOfField1, typeOfField2;
+    MemoryFlags insertionFlag = memoryAvailable;
+    insertionFlag = getInsertionFlag(field1,field2);
+    if (insertionFlag == memoryAvailable){
+        if (field2 == NULL)
+            insertionFlag = insertOpBin(indexOfOp,0,0);
+        else if (field1 == NULL) {
+            insertionFlag = insertOpBin(indexOfOp,0,TYPE_OF_FIELD_2);
+            INSERT_FIELD(field2)
+        }
+        else {
+            insertionFlag = insertOpBin(indexOfOp,TYPE_OF_FIELD_1,TYPE_OF_FIELD_2);
+            if ((TYPE_OF_FIELD_1 == reg) && (TYPE_OF_FIELD_2 == reg)) 
+                insertionFlag = insertRegisterBin(field1->value,field2->value);
+            else {
+                INSERT_FIELD(field1)
+                INSERT_FIELD(field2)
+            }
+        }      
     }
-
     return insertionFlag;
 }
 
 
 /*This assumes the operation word is correct.*/
-MemoryFlags insertOpBin(OperationWord *op, BinaryWord *newBinaryWord) {
-    newBinaryWord->parallelWord = op;
-    newBinaryWord->bits[WORD_LENGTH] = '\0';
-    insertIntoBinaryWord(newBinaryWord, 0, 0, 4);
-    insertIntoBinaryWord(newBinaryWord, op->opcode, 4, 4);
-    insertIntoBinaryWord(newBinaryWord, op->src, 8, 2);
-    insertIntoBinaryWord(newBinaryWord, op->dst, 10, 2);
-    insertIntoBinaryWord(newBinaryWord, immediate, 12, 2);
-    memory[IC++] = newBinaryWord;
-    return wordCreationSuccess;
+MemoryFlags insertOpBin(int opcode, int src, int dst) {
+    BinaryWord *newBinaryWord;
+    MemoryFlags insertionFlag = memoryAvailable;
+    newBinaryWord = malloc(sizeof(BinaryWord));
+    CHECK_MEMORY_ALLOC_ERROR(newBinaryWord, insertionFlag)
+    if (insertionFlag = memoryAvailable) {
+        newBinaryWord->bits[WORD_LENGTH] = '\0';
+        insertIntoBinaryWord(newBinaryWord, 0, 0, 4);
+        insertIntoBinaryWord(newBinaryWord, opcode, 4, 4);
+        insertIntoBinaryWord(newBinaryWord, src, 8, 2);
+        insertIntoBinaryWord(newBinaryWord, dst, 10, 2);
+        insertIntoBinaryWord(newBinaryWord, immediate, 12, 2);
+        newBinaryWord->possibleLabel = NULL;
+        newBinaryWord->nextData = NULL;
+        memory[IC++] = newBinaryWord;
+        insertionFlag = wordCreationSuccess;
+    }
+    
+    return insertionFlag;
 }
 
-MemoryFlags insertConstBin(unsigned co, BinaryWord *newBinaryWord) {
-    newBinaryWord->parallelWord = co;
-    newBinaryWord->bits[WORD_LENGTH] = '\0';
-    insertIntoBinaryWord(newBinaryWord, co, 0, 12);
-    insertIntoBinaryWord(newBinaryWord, immediate, 12, 2);
-    memory[IC++] = newBinaryWord;
-    return wordCreationSuccess;
+MemoryFlags insertConstBin(unsigned co) {
+    BinaryWord *newBinaryWord;
+    MemoryFlags insertionFlag = memoryAvailable;
+    newBinaryWord = malloc(sizeof(BinaryWord));
+    CHECK_MEMORY_ALLOC_ERROR(newBinaryWord, insertionFlag)
+    if (insertionFlag = memoryAvailable) {
+        newBinaryWord->bits[WORD_LENGTH] = '\0';
+        insertIntoBinaryWord(newBinaryWord, co, 0, 12);
+        insertIntoBinaryWord(newBinaryWord, immediate, 12, 2);
+        newBinaryWord->possibleLabel = NULL;
+        newBinaryWord->nextData = NULL;
+        memory[IC++] = newBinaryWord;
+        insertionFlag = wordCreationSuccess;
+    }
+    return insertionFlag;
 }
 
-MemoryFlags insertAddressBin(AddressWord *addr, BinaryWord *newBinaryWord) {
-    newBinaryWord->parallelWord = addr;
-    newBinaryWord->bits[WORD_LENGTH] = '\0';
-    insertIntoBinaryWord(newBinaryWord, 0, 0, 12);
-    insertIntoBinaryWord(newBinaryWord, index, 12, 2);
-    memory[IC++] = newBinaryWord;
-    return wordCreationSuccess;
+MemoryFlags insertAddressBin(Symbol *symbol) {
+    BinaryWord *newBinaryWord;
+    MemoryFlags insertionFlag = memoryAvailable;
+    newBinaryWord = malloc(sizeof(BinaryWord));
+    CHECK_MEMORY_ALLOC_ERROR(newBinaryWord, insertionFlag)
+    if (insertionFlag = memoryAvailable) {
+        newBinaryWord->bits[WORD_LENGTH] = '\0';
+        insertIntoBinaryWord(newBinaryWord, 0, 0, 12);
+        insertIntoBinaryWord(newBinaryWord, index, 12, 2);
+        newBinaryWord->possibleLabel = symbol;
+        newBinaryWord->nextData = NULL;
+        memory[IC++] = newBinaryWord;
+        insertionFlag = wordCreationSuccess;
+    }
+    return insertionFlag;
 }
 
-MemoryFlags insertRegisterBin(RegisterWord *regis, BinaryWord *newBinaryWord) {
-    newBinaryWord->parallelWord = regis;
-    newBinaryWord->bits[WORD_LENGTH] = '\0';
-    insertIntoBinaryWord(newBinaryWord, 0, 0, 6);
-    insertIntoBinaryWord(newBinaryWord, regis->src, 6, 3);
-    insertIntoBinaryWord(newBinaryWord, regis->dst, 9, 3);
-    insertIntoBinaryWord(newBinaryWord, reg, 12, 2);
-    memory[IC++] = newBinaryWord;
-    return wordCreationSuccess;
+MemoryFlags insertRegisterBin(int reg1, int reg2) {
+    BinaryWord *newBinaryWord;
+    MemoryFlags insertionFlag = memoryAvailable;
+    newBinaryWord = malloc(sizeof(BinaryWord));
+    CHECK_MEMORY_ALLOC_ERROR(newBinaryWord, insertionFlag)
+    if (insertionFlag = memoryAvailable) {
+        newBinaryWord->bits[WORD_LENGTH] = '\0';
+        insertIntoBinaryWord(newBinaryWord, 0, 0, 6);
+        insertIntoBinaryWord(newBinaryWord, reg1, 6, 3);
+        insertIntoBinaryWord(newBinaryWord, reg2, 9, 3);
+        insertIntoBinaryWord(newBinaryWord, reg, 12, 2);
+        newBinaryWord->possibleLabel = NULL;
+        newBinaryWord->nextData = NULL;
+        memory[IC++] = newBinaryWord;
+        insertionFlag = wordCreationSuccess;
+    }
+    return insertionFlag;
 }
 /*
 
@@ -121,9 +167,31 @@ void insertIntoBinaryWord(BinaryWord *newBinaryWord, unsigned data, int in, int 
     }
 }
 
-MemoryFlags getDataFlag(int data) {
+
+
+MemoryFlags getInsertionFlag(Field *field1, Field *field2) {
     MemoryFlags status;
+    int availableMemory, memoryNeeded = 1, fields = 2;
+    availableMemory = ADDRESSES_ALLOWED - (IC + DC);
     GET_MEMORY_STATUS(status)
-    if (data > MAX_DATA || data < MIN_DATA) status = illegalData;
+    if(field1 == NULL) fields = 1;
+    if(field2 == NULL) fields = 0;
+    switch (fields) {
+        case 1:
+            if (TYPE_OF_FIELD_2 == index) memoryNeeded+=2;
+            else memoryNeeded++;
+            break;
+        case 2:
+            if ((TYPE_OF_FIELD_1 == reg) && (TYPE_OF_FIELD_2 == reg)) memoryNeeded++;
+            else {
+                if (TYPE_OF_FIELD_1 == index) memoryNeeded+=2;
+                else memoryNeeded++;
+                if (TYPE_OF_FIELD_2 == index) memoryNeeded+=2;
+                else memoryNeeded++;
+            }
+        default:
+            break;
+    }
+    if (memoryNeeded > availableMemory) status = memoryFull;
     return status;
 }

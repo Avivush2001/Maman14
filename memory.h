@@ -2,67 +2,61 @@
 _flag = memoryAllocationError;
 #define GET_MEMORY_STATUS(_flag) if ((IC + DC) >= ADDRESSES_ALLOWED) _flag = memoryFull; \
 else _flag = memoryAvailable;
+#define TYPE_OF_FIELD_1 field1->type
+#define TYPE_OF_FIELD_2 field2->type
+#define INSERT_FIELD(_field) switch (_field->type) {\
+                case immediate:\
+                    insertionFlag = insertConstBin(_field->value);\
+                    break;\
+                case direct:\
+                    insertionFlag = insertAddressBin(_field->symbol);\
+                    break;\
+                case index:\
+                    insertionFlag = insertAddressBin(_field->symbol);\
+                    insertionFlag = insertConstBin(_field->value);\
+                    break;\
+                case reg:\
+                    insertionFlag = insertRegisterBin(0,_field->value);\
+                    break;\
+                default:\
+                    break;\
+            }
 
-
-
-/*
-The way I chose to handle the memory is as follows:
-The struct that represents binary words are chars of ones and zeroes in length 14,
-and they hold also hold a pointer to a parallel word.
-The structs that represent those words are different for each word type:
-Operations, Constants, labels, registers, data.
-Each one of them has a type, and a series of unsigned ints, with different bit fields
-to represent different things based on the type of the word.
-In each word the bits adds up to 14.
-The first stage functions "Converts" each line in the .am file to one of these
-structs, and it is easier to do these words conversion in the first stage
-instead of converting them straight to binary, which is what these functions
-are for.
-*/
-
-
-/*Struct that represents an operation word.*/
-typedef struct {
-    unsigned opcode :4;
-    unsigned src :2;
-    unsigned dst :2;
- } OperationWord;
- 
- /*Either a constant or an index of an array*/
- typedef struct {
-    unsigned constant :12;
- } ConstWord;
-
- typedef struct {
-    char *symbol;
-    unsigned address :12;
- } AddressWord;
-
- typedef struct {
-    unsigned src :3;
-    unsigned dst :3;
- } RegisterWord;
-
- typedef struct DataWord {
-    unsigned data :WORD_LENGTH;
-    struct DataWord *nextData;
- } DataWord;
-
- typedef struct {
-    char bits[WORD_LENGTH + 1];
-    AddressWord * parallelWord;
+ typedef struct BinaryWord{
+   char bits[WORD_LENGTH + 1];
+   Symbol * possibleLabel;
+   struct BinaryWord *nextData;
  } BinaryWord;
 
  typedef enum {
    memoryFull,
    memoryAvailable,
-   illegalData,
    wordCreationSuccess,
    memoryAllocationError
  } MemoryFlags;
+
 /*
-Flag that these function may return: illegalData, memoryFull, wordCreationSuccess, memoryAllocationError
+Flags that these functions may return: memoryFull, wordCreationSuccess, memoryAllocationError
+*/
+
+/* */
+/*
+The function gets the index of the operation we are inserting (basically the opcode)
+and 2 pointers to Field structs. The function returns a flag and adds the binary words of the operation
+to the memory.
+
+This function assumes the operation word and fields are correct.
+Also note that it assumes that if the operation has just one field,
+field1 should point to NULL. If the operation needs fields, both
+fields should point to NULL.
 */
 MemoryFlags insertOperation(int, Field *, Field *);
 
+/*
+This function gets an integer (can be char, doesn't matter),
+creates a binary word for it, adds it to the data linked list, 
+and returns a flag.
+
+Assumes the data is correct and in the set range.
+*/
 MemoryFlags insertDataWord(int);
