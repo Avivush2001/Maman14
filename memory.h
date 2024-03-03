@@ -1,7 +1,6 @@
 #define CHECK_MEMORY_ALLOC_ERROR(_word, _flag) if (_word == NULL) \
 _flag = memoryAllocationError;
-#define CREATE_NEW_BINARY_WORD BinaryWord *newBinaryWord = malloc(sizeof(BinaryWord))
-#define GET_MEMORY_STATUS(_flag) if ((IC + DC) >= RAM_SIZE) _flag = memoryFull; \
+#define GET_MEMORY_STATUS(_flag) if ((IC + DC) >= ADDRESSES_ALLOWED) _flag = memoryFull; \
 else _flag = memoryAvailable;
 
 
@@ -24,45 +23,34 @@ are for.
 
 /*Struct that represents an operation word.*/
 typedef struct {
-    Addressing type;
-    unsigned unused :4;
     unsigned opcode :4;
     unsigned src :2;
     unsigned dst :2;
-    unsigned are :2;
  } OperationWord;
  
  /*Either a constant or an index of an array*/
  typedef struct {
-    Addressing type;
     unsigned constant :12;
-    unsigned are :2;
  } ConstWord;
 
  typedef struct {
-    Addressing type;
     char *symbol;
     unsigned address :12;
-    unsigned are :2;
  } AddressWord;
 
  typedef struct {
-    Addressing type;
-    unsigned unused :6;
     unsigned src :3;
     unsigned dst :3;
-    unsigned are :2;
  } RegisterWord;
 
  typedef struct DataWord {
-    Addressing type;
     unsigned data :WORD_LENGTH;
     struct DataWord *nextData;
  } DataWord;
 
  typedef struct {
     char bits[WORD_LENGTH + 1];
-    void * parallelWord;
+    AddressWord * parallelWord;
  } BinaryWord;
 
  typedef enum {

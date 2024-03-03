@@ -109,26 +109,26 @@ Given a string, a string array and its size, it checks if the string is in the a
 If it is 'index' is updated. If not index stays NOT_FOUND. Returns the index.
 */
 int findInStringArray(char* word, char *arr[], int size) {
-    int index, i;
-    index = NOT_FOUND;
+    int in, i;
+    in = NOT_FOUND;
     for (i = 0; i < size; i++) {
         if (!strcmp(word, arr[i])) {
-            index = i;
+            in = i;
             break;
         }
     }
-    return index;
+    return in;
 }
 int findInOperationsArray(char* word) {
-    int index, i;
-    index = NOT_FOUND;
+    int in, i;
+    in = NOT_FOUND;
     for (i = 0; i < OPERATIONS_SIZE; i++) {
         if (!strcmp(word, operationsArr[i].name)) {
-            index = i;
+            in = i;
             break;
         }
     }
-    return index;
+    return in;
 }
 
 

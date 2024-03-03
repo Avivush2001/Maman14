@@ -12,11 +12,12 @@ typedef struct {
     Attribute attr;
 } Symbol;
 
-/*The field struct is used for a memory function to insert operation binary's.*/
+/*The field struct is used for a memory function to insert operation binary's.
+Note that when using a field that isn't a label, equal 'name' to NULL*/
 typedef struct {
     Addressing type;
     char *name;
-    unsigned value;
+    unsigned value : 12;
 } Field;
 
 

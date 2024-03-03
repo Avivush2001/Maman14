@@ -37,19 +37,19 @@ If found 'index' will be updated to hash that found it.
 If not found 'index' will stay 'NOT_FOUND'.
 */
 int lookUpTable(SymbolHashTable *table, char *name) {
-    int hash, i, key, index;
-    index = NOT_FOUND;
+    int hash, i, key, in;
+    in = NOT_FOUND;
     key = generateKey(name);
     ITERATE_HASHES {
         hash = generateHash(key, i);
         if(!strcmp(TABLE_NAME_AT(hash), name)) {
-            index = hash;
+            in = hash;
             break;
         }
     }
     
     
-    return index;
+    return in;
 }
 
 
@@ -58,23 +58,23 @@ Given a table and a name to insert, the function in a simillar fashion to he loo
 searches the table for a free place to put the name. It also updates the item count and the flag if the table is full.
 */
 int insertToTable(SymbolHashTable *table, char *name) {
-    int hash, i, key, index;
+    int hash, i, key, in;
     key = generateKey(name);
-    index = NOT_FOUND;
+    in = NOT_FOUND;
     ITERATE_HASHES {
         hash = generateHash(key, i);
         if(*TABLE_NAME_AT(hash) == '\0') {
             if ((TABLE_NAME_AT(hash) = MALLOC_LABEL) != NULL) {
                 TABLE_NAME_AT(hash) = strcpy(TABLE_NAME_AT(hash), name);
                 table->itemCount++;
-                index = hash;
+                in = hash;
             }
             break;
         }
     }
     if (table->itemCount == (HASHSIZE)) table->flag = hashTableFull;
     
-    return index;
+    return in;
 }
 
 /*Frees hashtable items' names. It's the responsibility of other functions to 
