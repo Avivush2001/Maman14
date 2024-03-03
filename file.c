@@ -7,9 +7,9 @@
     Then it creates the new file name and then the file, frees the char pointer and returns the file pointer.
 */
 /* 
-The function gets a suffix and a file name as described earlier, declares a char poiner and allocating
+The function gets a suffix and a file name as described earlier, declares a char pointer and allocating
 it enough space for the file name (without the old suffix) and for the new suffix.
-Then it copies the file name (withous its old suffix) to the space we allocated, and concats it with the suffix,
+Then it copies the file name (without its old suffix) to the space we allocated, and concat it with the suffix,
 and returning the pointer.
 */
 char *newFileName(char *fname, char *suffix) {

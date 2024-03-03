@@ -8,14 +8,14 @@
 #define MACRO_NAME_AT_INDEX macroTable->items[indexOfMacro].name
 #define COMPARE_MACRO_END !strcmp(field1,MACRO_END)
 #define DEFAULT_CONTEXT_PA contextFlag = readingLine
-#define ERROR_CASE_PA(_flag, _errorMessege) ERROR_CASE("pre assembler", _flag, _errorMessege)\
+#define ERROR_CASE_PA(_flag, _errorMessage) ERROR_CASE("pre assembler", _flag, _errorMessage)\
 newFlag = errorEncounteredPA;\
 *contextFlag = skipMacroDefinition;\
 break;
-#define FATAL_ERROR_CASE_PA(_flag, _errorMessege) ERROR_CASE("pre assembler", _flag, _errorMessege)\
+#define FATAL_ERROR_CASE_PA(_flag, _errorMessage) ERROR_CASE("pre assembler", _flag, _errorMessage)\
 newFlag = errorEncounteredPA;\
 break;
-#define WARNING_CASE_PA(_flag, _errorMessege) WARNING_CASE("pre assembler", _flag, _errorMessege)\
+#define WARNING_CASE_PA(_flag, _errorMessage) WARNING_CASE("pre assembler", _flag, _errorMessage)\
 *contextFlag = readingLine;\
 break;
 

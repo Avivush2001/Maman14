@@ -75,6 +75,6 @@ typedef struct {
 /*
 Flag that these function may return: illegalData, memoryFull, wordCreationSuccess, memoryAllocationError
 */
-MemoryFlags insertOperation(Operation *, Field *, Field *);
+MemoryFlags insertOperation(int, Field *, Field *);
 
 MemoryFlags insertDataWord(int);

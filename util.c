@@ -178,7 +178,7 @@ Bool isPreservedWord(char *label) {
 }
 
 /*
-Given a string, it counts the words in that line that are seperated.
+Given a string, it counts the words in that line that are separated.
 */
 int countWordsInLine(char *line) {
     int count, i;

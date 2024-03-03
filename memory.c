@@ -1,6 +1,6 @@
 #include "data.h"
 
-BinaryWord *memory[ADRESSES_ALOWED]; /*REMEMBER TO INITIALIZE WITH NULLs*/
+BinaryWord *memory[ADDRESSES_ALLOWED]; /*REMEMBER TO INITIALIZE WITH NULLs*/
 int IC = 0, DC = 0;
 DataWord *headData = NULL, *tailData = NULL;
 
@@ -26,7 +26,7 @@ MemoryFlags insertDataWord(int data) {
 /*
 TODO: instead of being given a number, give a pointer to a struct of each field.
 */
-MemoryFlags insertOperation(Operation *op, Field *field1, Field *field2) {
+MemoryFlags insertOperation(int indexOfOp, Field *field1, Field *field2) {
     MemoryFlags insertFlag;
     return insertFlag;
 }

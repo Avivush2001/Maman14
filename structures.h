@@ -12,7 +12,7 @@ typedef struct {
     Attribute attr;
 } Symbol;
 
-/*The field struct is used for a memory function to insert operation binarys.*/
+/*The field struct is used for a memory function to insert operation binary's.*/
 typedef struct {
     Addressing type;
     char *name;

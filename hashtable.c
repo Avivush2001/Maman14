@@ -3,7 +3,7 @@
 /*Initialize a hashtable by setting the itemCount to 0 and the flag to hashTableFree*/
 SymbolHashTable *initializeHashTable(SymbolHashTable *table) {
     int i;
-    ITIRATE_HASHES {
+    ITERATE_HASHES {
         TABLE_NAME_AT(i) = "\0";
         ITEM_AT_INDEX = NULL;
     }
@@ -40,7 +40,7 @@ int lookUpTable(SymbolHashTable *table, char *name) {
     int hash, i, key, index;
     index = NOT_FOUND;
     key = generateKey(name);
-    ITIRATE_HASHES {
+    ITERATE_HASHES {
         hash = generateHash(key, i);
         if(!strcmp(TABLE_NAME_AT(hash), name)) {
             index = hash;
@@ -54,14 +54,14 @@ int lookUpTable(SymbolHashTable *table, char *name) {
 
 
 /*
-Given a table and a name to insert, the function in a similler fashion to he look up function,
+Given a table and a name to insert, the function in a simillar fashion to he look up function,
 searches the table for a free place to put the name. It also updates the item count and the flag if the table is full.
 */
 int insertToTable(SymbolHashTable *table, char *name) {
     int hash, i, key, index;
     key = generateKey(name);
     index = NOT_FOUND;
-    ITIRATE_HASHES {
+    ITERATE_HASHES {
         hash = generateHash(key, i);
         if(*TABLE_NAME_AT(hash) == '\0') {
             if ((TABLE_NAME_AT(hash) = MALLOC_LABEL) != NULL) {
@@ -82,7 +82,7 @@ free the pointer and its contents.*/
 SymbolHashTable *freeTableNames(SymbolHashTable *table) {
     int i;
     char* name;
-    ITIRATE_HASHES {
+    ITERATE_HASHES {
         if (*(name = TABLE_NAME_AT(i)) != '\0')
             free(name);
     }

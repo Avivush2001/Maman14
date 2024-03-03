@@ -6,8 +6,8 @@ Instructions for macros and the pre assembler:
 -No calling to macro that doesn't exist in the file yet and no need to check it.
 -Every macro definition will be closed with 'endmcr' and no need to check it.
 
-Note: using the current algorithem, in a line where a macro is defined or a definition is ending,
-every word written after them is discaredand ignored. Example:
+Note: using the current algorithm, in a line where a macro is defined or a definition is ending,
+every word written after them is discared and ignored. Example:
 
 mcr macro something
     ...
@@ -19,12 +19,12 @@ This is the main pre-assembler function.
 
 Flags and their meaning:
 Context Flag - Holds the state of the pre assembler and 
-    gives the function context about a previous action of the progrem and what
+    gives the function context about a previous action of the program and what
     to do next.
 Error Flag - Is updated only if an error occurs.
 
 This is the algorithm:
-1 - Read a line and store its adress in a pointer. If end of file is reached, go to
+1 - Read a line and store its address in a pointer. If end of file is reached, go to
     the last step.
 2 - Read the first two fields.
 3 - Get the line context:
@@ -33,11 +33,11 @@ This is the algorithm:
     macroDefinitionStarted - go to step 6
     macroDefinitionOngoing - go to step 8
     skipMacroDefinition - go to step 1
-    readingLine, skipunDefinedMacro, macroDefinitionEnded - change context flag
+    readingLine, skipUnDefinedMacro, macroDefinitionEnded - change context flag
     to readingLine and go to step 1
 4 - Add the line to the file, go to step 1.
 5 - Get the macro from the table using the first field, add all the lines, go to step 1.
-6 - Check for any possible error. If an error occured go to step 9.
+6 - Check for any possible error. If an error occurred go to step 9.
 7 - Insert the name to the macroTable, go to step 1.
 8 - Insert the line to the macro using the index found earlier, go to step 1.
 9 - Print an error message and change the context and error flags, go to step 1.
@@ -158,7 +158,7 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName, SymbolHashTable *macroT
         /*Handle errors (step 9)*/
         errorFlagPA = errorHandler(&contextFlag, errorFlagPA,lineCounter, fileName);
 
-        /*Free relevent memeory spaces*/
+        /*Free relevant memory spaces*/
         free(field1);
         if (freeField2) free(field2);
         if (freeLine) free(line);

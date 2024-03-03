@@ -1,5 +1,5 @@
 #define HASHSIZE 127
-#define ITIRATE_HASHES for(i = 0; i < HASHSIZE; i++)
+#define ITERATE_HASHES for(i = 0; i < HASHSIZE; i++)
 #define TABLE_NAME_AT(_hash) table->items[_hash].name
 #define ITEM_AT_INDEX table->items[i].item
 /*Flags to represent if a table is full or free to add to.*/

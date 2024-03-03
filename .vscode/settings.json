@@ -23,8 +23,10 @@
     },
     "C_Cpp.default.compilerPath": "/usr/bin/gcc",
     "cSpell.words": [
+        "allclear",
         "endmcr",
         "macptr",
+        "oldsuffix",
         "Preassembler",
         "Wordd"
     ]
