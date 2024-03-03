@@ -11,11 +11,12 @@ int main() {
     /*Can't be initialized another way besides allocating memory.*/
     SymbolHashTable macroHashTable = {macroItems, 0, hashTableFree};
     FILE *fp, *nfp;
+    PreassemblerFlags flagPA;
    
     fp = fopen("test1PA.as", "r");
-    nfp = preassembler(fp, "test1PA.am", &macroHashTable);
-    if (fp != nfp) {
-        fclose(nfp);
+    flagPA = preassembler(fp, "test1PA.am", &macroHashTable);
+    if (flagPA == errorEncounteredPA) {
+        remove("test1PA.am");
     }
     fclose(fp);
     freeTableNames(&macroHashTable);

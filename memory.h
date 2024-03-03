@@ -54,10 +54,10 @@ typedef struct {
     unsigned are :2;
  } RegisterWord;
 
- typedef struct {
+ typedef struct DataWord {
     Addressing type;
     unsigned data :WORD_LENGTH;
-    DataWord *nextData;
+    struct DataWord *nextData;
  } DataWord;
 
  typedef struct {
