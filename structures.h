@@ -1,3 +1,8 @@
+/*
+This is a header file for more general structures and enums that I wasn't
+sure where to put.
+*/
+
 typedef enum {
     False = 0,
     True = 1
@@ -7,7 +12,8 @@ typedef enum {
 typedef enum {
     code,
     data,
-    external
+    external,
+    undefined
 } Attribute;
 
 typedef enum {
@@ -31,16 +37,8 @@ typedef struct {
     Attribute attr;
 } Symbol;
 
-/*The field struct is used for a memory function to insert operation binary's.
-Note that when using a field that isn't a label, equal 'name' to NULL*/
 typedef struct {
     Addressing type;
     char *symbol;
     unsigned value : 12;
 } Field;
-/*
-Add how to use the field struct
-*/
-
-
-

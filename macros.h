@@ -12,6 +12,7 @@
 #define MIN_DATA -8192
 #define MAX_CONST 2047
 #define MIN_CONST -2048
+#define OPEN_NEW_FILE nfp = fopen(fileName, "w");
 
 
 #define MALLOC_LINE malloc(sizeof(char) * MAX_LINE_LENGTH)
