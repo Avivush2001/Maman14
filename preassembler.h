@@ -6,7 +6,7 @@
 #define MALLOC_MACRO malloc(sizeof(Macro))
 #define MACRO_AT_INDEX macroTable->items[indexOfMacro].item
 #define MACRO_NAME_AT_INDEX macroTable->items[indexOfMacro].name
-#define COMPARE_MACRO_END !strcmp(field1,MACRO_END)
+#define COMPARE_MACRO_END !strcmp(str1,MACRO_END)
 #define DEFAULT_CONTEXT_PA contextFlag = readingLine
 #define ERROR_CASE_PA(_flag, _errorMessage) ERROR_CASE("pre assembler", _flag, _errorMessage)\
 newFlag = errorEncounteredPA;\

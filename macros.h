@@ -16,7 +16,7 @@
 
 #define MALLOC_LINE malloc(sizeof(char) * MAX_LINE_LENGTH)
 #define MALLOC_LABEL malloc(sizeof(char) * MAX_LABEL_SIZE)
-#define READ_FIRST_TWO_FIELDS sscanf(line, "%31s %31s", field1, field2)
+#define READ_FIRST_TWO_FIELDS sscanf(line, "%31s %31s", str1, str2)
 
 #define PRINT_ERROR(_stage,_errorMessage) fprintf(stderr,"Error encountered during %s stage!\n", _stage);\
 fprintf(stderr,"At line %d in file %s: %s",lineCounter, fileName, _errorMessage);

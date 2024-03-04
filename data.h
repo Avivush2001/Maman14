@@ -4,11 +4,9 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <math.h>
-#include "constants.h"
-#include "enums.h"
+#include "macros.h"
 #include "structures.h"
 #include "util.h"
-#include "file.h"
 #include "hashtable.h"
 #include "preassembler.h"
 #include "memory.h"

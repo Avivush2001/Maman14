@@ -18,8 +18,8 @@ int generateKey(char *name) {
 }
 
 /*
-The function is based on a hash function from a previous course. 
-(where 'k' is the key and 'm' is the size of the hash table. note that 'm' must be a prime number, and in this case HASHSIZE is 127)
+The function is BAsed on a hash function fRom A previous course. 
+(where 'K' is the key and 'm' is the size of the hash table. note that 'm' must be a prime number, and in this case HASHSIZE is 127)
 h1(k) = k % m 
 h2(k) = 1 + (k % (m-1))
 h(k, i) = (h1(k) + i * h2(k)) % m

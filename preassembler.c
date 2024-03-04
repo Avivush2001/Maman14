@@ -42,10 +42,12 @@ This is the algorithm:
 8 - Insert the line to the macro using the index found earlier, go to step 1.
 9 - Print an error message and change the context and error flags, go to step 1.
 */
+
+/*Change the Function to not need the macro table symbol hash table pointer*/
 PreassemblerFlags preassembler(FILE *fp, char *fileName, SymbolHashTable *macroTable) {
     
     /******Initializations*******/
-    char *line, *field1, *field2; 
+    char *line, *str1, *str2; 
     /*
     Index of the macro in the table that we are defining / inserting into the file, 
     counters for error handling.
@@ -55,7 +57,7 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName, SymbolHashTable *macroT
     /*Flags as defined earlier*/
     PreassemblerFlags contextFlag, errorFlagPA; 
 
-    /*Flags that signal either to free *field2 or *line.*/
+    /*Flags that signal either to free *str2 or *line.*/
     Bool freeField2, freeLine;
 
     /*File pointer to the new file.*/
@@ -88,10 +90,10 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName, SymbolHashTable *macroT
     while(fgets(line, MAX_LINE_LENGTH, fp) != NULL && contextFlag != errorEncounteredPA) {
 
         /*Memory allocations and reading the first two fields (step 2)*/
-        if ((field1 = MALLOC_LABEL) != NULL && (field2 = MALLOC_LABEL) != NULL) {
+        if ((str1 = MALLOC_LABEL) != NULL && (str2 = MALLOC_LABEL) != NULL) {
              stringCounter = READ_FIRST_TWO_FIELDS;
              /*Get the line's context (step 3)*/
-             contextFlag = lineContext( contextFlag, field1, &indexOfMacro, macroTable);
+             contextFlag = lineContext( contextFlag, str1, &indexOfMacro, macroTable);
         }
         else FAILED_MALLOC_PA;
         freeField2 = True;
@@ -118,12 +120,12 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName, SymbolHashTable *macroT
             
             /*Add the macro to the table (steps 6 and 7)*/
             case macroDefinitionStarted: 
-                contextFlag = canDefineMacro(field2, stringCounter, macroTable);
+                contextFlag = canDefineMacro(str2, stringCounter, macroTable);
                 
                 if (contextFlag == macroDefinitionStarted) {
                     contextFlag = macroDefinitionOngoing;
-                    if((indexOfMacro = insertToTable(macroTable, field2)) == NOT_FOUND || (macptr = MALLOC_MACRO) != NULL) {
-                        macptr->name = field2;
+                    if((indexOfMacro = insertToTable(macroTable, str2)) == NOT_FOUND || (macptr = MALLOC_MACRO) != NULL) {
+                        macptr->name = str2;
                         MACRO_AT_INDEX = macptr;
                         freeField2 = False;
                     } else {
@@ -159,8 +161,8 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName, SymbolHashTable *macroT
         errorFlagPA = errorHandler(&contextFlag, errorFlagPA,lineCounter, fileName);
 
         /*Free relevant memory spaces*/
-        free(field1);
-        if (freeField2) free(field2);
+        free(str1);
+        if (freeField2) free(str2);
         if (freeLine) free(line);
 
         /*Allocate new memory for the line and advance the line counter.*/
@@ -184,7 +186,7 @@ skipMacroDefinition, readingLine, macroDefinitionOngoing.
 Using the flag and the first field we got earlier, it returns a new flag,
 and if it found a macro call indexOfMacro will be updated to that index.
 */
-PreassemblerFlags lineContext(PreassemblerFlags currentFlag, char *field1, int *indexOfMacro, SymbolHashTable *macroTable) {
+PreassemblerFlags lineContext(PreassemblerFlags currentFlag, char *str1, int *indexOfMacro, SymbolHashTable *macroTable) {
     PreassemblerFlags newFlag;
     newFlag = currentFlag;
     switch (currentFlag) {
@@ -197,8 +199,8 @@ PreassemblerFlags lineContext(PreassemblerFlags currentFlag, char *field1, int *
 
         /*If readingLine is on, check for macro call.*/
         case readingLine:
-            if (!strcmp(MACRO_DEF, field1)) newFlag = macroDefinitionStarted;
-            else newFlag = checkForMacroCall(field1, indexOfMacro,macroTable);
+            if (!strcmp(MACRO_DEF, str1)) newFlag = macroDefinitionStarted;
+            else newFlag = checkForMacroCall(str1, indexOfMacro,macroTable);
             break;
 
         /*If macroDefinitionOngoing is on, check if the first field is the end of the macro
@@ -264,9 +266,9 @@ PreassemblerFlags errorHandler(PreassemblerFlags *contextFlag, PreassemblerFlags
     return newFlag;
 }
 
-/*Frees the macros in the table, not the table itself.
-We won't need the actual macros in the rest of the assembler's operations,
-but we will need their names for later stages.*/
+/*Frees the macros in the taBle, not the tAble itself.
+We won't need the actual macRos in the rest of the Assembler's operations,
+but we will need to checK their names for later stages.*/
 SymbolHashTable *freeMacrosFromTable(SymbolHashTable* macroTable) {
     int indexOfMacro;
     Macro *macptr;

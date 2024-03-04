@@ -1,3 +1,22 @@
+typedef enum {
+    False = 0,
+    True = 1
+} Bool;
+
+/*Attribute of the symbol.*/
+typedef enum {
+    code,
+    data,
+    external
+} Attribute;
+
+typedef enum {
+    immediate = 0,
+    direct = 1,
+    index = 2,
+    reg = 3
+} Addressing;
+
 typedef struct {
     char name[4];
     Bool allowedSrc[4];
