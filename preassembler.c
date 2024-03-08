@@ -47,7 +47,7 @@ This is the algorithm:
 PreassemblerFlags preassembler(FILE *fp, char *fileName) {
     
     /******Initializations*******/
-    char *line, *str1, *str2; 
+    char line[MAX_LINE_LENGTH], str1[MAX_LABEL_SIZE], str2[MAX_LABEL_SIZE]; 
     /*
     Index of the macro in the table that we are defining / inserting into the file, 
     counters for error handling.
@@ -57,8 +57,6 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName) {
     /*Flags as defined earlier*/
     PreassemblerFlags contextFlag, errorFlagPA; 
 
-    /*Flags that signal either to free *str2 or *line.*/
-    Bool freeField2, freeLine;
 
     /*File pointer to the new file.*/
     FILE *nfp;
@@ -73,29 +71,18 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName) {
     DEFAULT_CONTEXT_PA;
     errorFlagPA = allclearPA;
 
-    /*Line memory allocation*/
-    if ((line = MALLOC_LINE) == NULL ||  nfp == NULL) {
-        fprintf(stderr,"Fatal error during pre assembler stage.\nEither failed to create %s or couldn't allocate memory. Stopping stage.\n", fileName);
-        FAILED_MALLOC_PA;
-        errorFlagPA = contextFlag;
-    }
-
     /*Integers setup*/
     lineCounter = 1;
     indexOfMacro = NOT_FOUND;
 
     /*Main loop (step 1)*/
-    while(fgets(line, MAX_LINE_LENGTH, fp) != NULL && contextFlag != errorEncounteredPA) {
+    while(fgets(line, MAX_LINE_LENGTH, fp) != NULL) {
 
-        /*Memory allocations and reading the first two fields (step 2)*/
-        if ((str1 = MALLOC_LABEL) != NULL && (str2 = MALLOC_LABEL) != NULL) {
-             stringCounter = READ_FIRST_TWO_FIELDS;
-             /*Get the line's context (step 3)*/
-             contextFlag = lineContext( contextFlag, str1, &indexOfMacro);
-        }
-        else FAILED_MALLOC_PA;
-        freeField2 = True;
-        freeLine = True;
+        /*Reading the first two fields (step 2)*/
+        stringCounter = READ_FIRST_TWO_FIELDS;
+
+        /*Get the line's context (step 3)*/
+         contextFlag = lineContextPA( contextFlag, str1, &indexOfMacro);
         switch (contextFlag) {
 
             /*Add line to file (step 4)*/
@@ -119,57 +106,36 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName) {
             /*Add the macro to the table (steps 6 and 7)*/
             case macroDefinitionStarted: 
                 contextFlag = canDefineMacro(str2, stringCounter);
-                
                 if (contextFlag == macroDefinitionStarted) {
+                    EXIT_IF((macptr = MALLOC_MACRO) == NULL)
                     contextFlag = macroDefinitionOngoing;
-                    if((indexOfMacro = insertToTable(&macroHashTable, str2)) == NOT_FOUND || (macptr = MALLOC_MACRO) != NULL) {
-                        macptr->name = str2;
-                        MACRO_AT_INDEX = macptr;
-                        freeField2 = False;
-                    } else {
-                        FAILED_MALLOC_PA;
-                        free(macptr);
-                    }
+                    indexOfMacro = insertToTable(&macroHashTable, str2);
+                    macptr->name = str2;
+                    MACRO_AT_INDEX = macptr;
                 }
                 break;
             
             /*Add the line to the macr (step 8)*/
             case macroDefinitionOngoing: 
-                macptr->line = line;
-                if ((nextMac = MALLOC_MACRO) != NULL) {
-                    nextMac->name = macptr->name;
-                    macptr->nextLine = nextMac;
-                    macptr = nextMac;
-                    macptr->nextLine = NULL;
-                    freeLine = False;
-                } else FAILED_MALLOC_PA;
+                EXIT_IF(((nextMac = MALLOC_MACRO) == NULL) || ((macptr->line = MALLOC_LINE) == NULL))
+                macptr->line = strcpy(macptr->line, line);
+                nextMac->name = macptr->name;
+                macptr->nextLine = nextMac;
+                macptr = nextMac;
+                macptr->nextLine = NULL;
                 break;
             
             /*Dont do anything but change the context for macroDefinitionEnded*/
             case macroDefinitionEnded: 
                 DEFAULT_CONTEXT_PA;
                 break;
-            
             /*Dont do anything for skipMacroDefinition and skipUndefinedMacro*/
             default: break;
-            
         }
-        /*Free relevant memory spaces*/
-        free(str1);
-        if (freeField2) free(str2);
-        if (freeLine) free(line);
-
-        /*Allocate new memory for the line and advance the line counter.*/
-        line = MALLOC_LINE;
         lineCounter++;
-        if (line == NULL) FAILED_MALLOC_PA;
         /*Handle errors (step 9)*/
         errorFlagPA = errorHandler(&contextFlag, errorFlagPA,lineCounter, fileName);
     }
-
-    /*Delete the file that was created if an error was encountered.*/
-    
-    free(line);
     freeMacrosFromTable();
     fclose(nfp);
     return errorFlagPA;
@@ -181,7 +147,7 @@ skipMacroDefinition, readingLinePA, macroDefinitionOngoing.
 Using the flag and the first field we got earlier, it returns a new flag,
 and if it found a macro call indexOfMacro will be updated to that index.
 */
-PreassemblerFlags lineContext(PreassemblerFlags currentFlag, char *str1, int *indexOfMacro) {
+PreassemblerFlags lineContextPA(PreassemblerFlags currentFlag, char *str1, int *indexOfMacro) {
     PreassemblerFlags newFlag;
     newFlag = currentFlag;
     switch (currentFlag) {
@@ -255,7 +221,6 @@ PreassemblerFlags errorHandler(PreassemblerFlags *contextFlag, PreassemblerFlags
         ERROR_CASE_PA(errorMacroHashTableFull, "Hash table is full.\n")
         ERROR_CASE_PA(errorMacroNameAlreadyDefined, "Macro name is already defined.\n")
         WARNING_CASE_PA(skipUndefinedMacro, "Tried to call to and undefined macro, call skipped.\n")
-        FATAL_ERROR_CASE_PA(errorEncounteredPA, "Failed to allocate memory. Stopping stage.\n")
         default: break;
     }
     return newFlag;

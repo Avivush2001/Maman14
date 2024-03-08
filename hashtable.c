@@ -61,19 +61,19 @@ int insertToTable(HashTable *table, char *name) {
     int hash, i, key, in;
     key = generateKey(name);
     in = NOT_FOUND;
-    ITERATE_HASHES {
-        hash = generateHash(key, i);
-        if(*TABLE_NAME_AT(hash) == '\0') {
-            if ((TABLE_NAME_AT(hash) = MALLOC_LABEL) != NULL) {
+    if (table->flag != hashTableFull) {
+        ITERATE_HASHES {
+            hash = generateHash(key, i);
+            if(*TABLE_NAME_AT(hash) == '\0') {
+                EXIT_IF((TABLE_NAME_AT(hash) = MALLOC_LABEL) == NULL)
                 TABLE_NAME_AT(hash) = strcpy(TABLE_NAME_AT(hash), name);
                 table->itemCount++;
                 in = hash;
+                break;
             }
-            break;
+            if (table->itemCount == (HASHSIZE)) table->flag = hashTableFull;
         }
     }
-    if (table->itemCount == (HASHSIZE)) table->flag = hashTableFull;
-    
     return in;
 }
 

@@ -15,6 +15,7 @@ int main() {
     FILE *fp;
     PreassemblerFlags flagPA;
     initializeHashTable(&macroHashTable);
+    initializeHashTable(&symbolHashTable);
     fp = fopen("test1PA.as", "r");
     flagPA = preassembler(fp, "test1PA.am");
     if (flagPA == errorEncounteredPA) {
@@ -22,6 +23,7 @@ int main() {
     }
     fclose(fp);
     freeTableNames(&macroHashTable);
+    freeTableNames(&symbolHashTable);
     return 0;
 }
 

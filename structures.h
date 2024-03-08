@@ -13,6 +13,7 @@ typedef enum {
     code,
     data,
     external,
+    constant,
     undefined
 } Attribute;
 

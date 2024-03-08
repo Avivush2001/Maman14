@@ -56,7 +56,7 @@ pointer to the .as file if an error occurred during the run.*/
 PreassemblerFlags preassembler(FILE*,char*);
 
 /*Checks the context of a given line.*/
-PreassemblerFlags lineContext(PreassemblerFlags, char *, int *);
+PreassemblerFlags lineContextPA(PreassemblerFlags, char *, int *);
 
 /*Checks a given field for a macro call*/
 PreassemblerFlags checkForMacroCall(char *, int *);
