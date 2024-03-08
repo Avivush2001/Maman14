@@ -6,7 +6,7 @@ extern char * registersArr[], * instructionArr[];
 
 StageOneFlags stageOne(FILE *fp, char *fileName) {
     /*str1 is longer by one to make sure the ':' are in the character*/
-    char line[MAX_LINE_LENGTH], str1[MAX_LABEL_SIZE+1], str2[MAX_LABEL_SIZE];
+    char line[MAX_LINE_LENGTH];
     int lineCounter, opcode, stringsCounter, possibleOpCode;
     FILE *nfp;
     Symbol *symb;
@@ -86,11 +86,13 @@ StageOneFlags lineContextSO(char *line, StageOneFlags oldContext, int *possibleO
                             break;
                     }
                     symb->attr = data;
+                    symb->value = DC;
                 } else if((i = findInOperationsArray(str2))!= NOT_FOUND) {
                     /*Check the second string for operations*/
                     contextFlag = isOperation;
                     *possibleOpCode = i;
                     symb->attr = code;
+                    symb->value = IC+100;
                 } else contextFlag = errorIllegalKeyWord;
                 
                 /*Handle a case of a label before .extern .entry .define*/
