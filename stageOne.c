@@ -100,7 +100,7 @@ StageOneFlags lineContextSO(char *line, StageOneFlags oldContext, int *possibleO
                     fprintf(stderr, "WARNING Label: %s is in an illegal location and will be considered undefined.\n", symb->symbol);
                     free(symb->symbol);
                     free(symb);
-                    symbolItem->name = NULL;
+                    symbolItem->name = "\0";
                     symbolItem->item = NULL;
                     strcpy(str1, str2);
                     strcpy(str2, str3);
