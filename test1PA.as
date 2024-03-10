@@ -2,7 +2,7 @@
 MAIN:   mov r3, LIST[sz] 
 LOOP:   jmp  L1 
 .entry END
-.extern HELLO
+MAIN: .extern HELLO
 mcr  mmcr  
     cmp r3, #sz 
     bne END 

@@ -37,7 +37,6 @@ StageOneFlags lineContextSO(char *line, StageOneFlags oldContext, int *possibleO
     /*Check for comment line*/
     else if (*str1 == ';') contextFlag = skipLine;
     else{
-
         /*Checking if the first string can be a legal label*/
         if (isLabelDefinition(str1)) {
             i = lookUpTable(&symbolHashTable, str1);
