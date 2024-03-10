@@ -40,6 +40,9 @@ typedef enum {
     allclearSO
 } StageOneFlags;
 
-
-/*The field struct is used for a memory function to insert operation binary's.
-Note that when using a field that isn't a label, equal 'name' to NULL*/
+StageOneFlags stageOne(FILE *, char *);
+StageOneFlags lineContextSO(char *line, StageOneFlags oldContext, int *possibleOpCode);
+Bool isLegalSymbol(char *possibleSymbol, Bool isConst);
+Bool isLabelDefinition(char* possibleLabel);
+void freeSymbols();
+void printSymbols();

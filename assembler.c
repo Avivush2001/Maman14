@@ -22,6 +22,9 @@ int main() {
         remove("test1PA.am");
     }
     fclose(fp);
+    fp = fopen("test1PA.am", "r");
+    stageOne(fp, "test1PA");
+    fclose(fp);
     freeTableNames(&macroHashTable);
     freeTableNames(&symbolHashTable);
     return 0;

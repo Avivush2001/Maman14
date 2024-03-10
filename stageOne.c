@@ -7,18 +7,19 @@ extern char * registersArr[], * instructionArr[];
 StageOneFlags stageOne(FILE *fp, char *fileName) {
     /*str1 is longer by one to make sure the ':' are in the character*/
     char line[MAX_LINE_LENGTH];
-    int lineCounter, opcode, stringsCounter, possibleOpCode;
-    FILE *nfp;
+    int lineCounter = 1, stringsCounter, possibleOpCode;
     Symbol *symb;
     StageOneFlags contextFlag, errorFlagSO; 
     DEFAULT_CONTEXT_SO
     errorFlagSO = allclearSO;
-    OPEN_NEW_FILE
     while(fgets(line, MAX_LINE_LENGTH, fp) != NULL && errorFlagSO != errorEncounteredSO) {
         possibleOpCode = NOT_FOUND;
         contextFlag = lineContextSO(line, contextFlag, &possibleOpCode);
+        printf("line %d, flag: %d, opcode: %d\n", lineCounter, contextFlag, possibleOpCode);
         lineCounter++;
     }
+    printSymbols();
+    freeSymbols();
 }
 
 
@@ -54,7 +55,7 @@ StageOneFlags lineContextSO(char *line, StageOneFlags oldContext, int *possibleO
                     symbolItem->item = symb;
                     symb->symbol = symbolHashTable.items[i].name;
                     symb->entry = False;
-                    symb->entry = undefined;
+                    symb->attr = undefined;
                 } else contextFlag = errorSymbolHashTableFull;
             }
         }
@@ -153,4 +154,28 @@ Bool isLabelDefinition(char* possibleLabel) {
         } else flag = False;
     }
     return flag;
+}
+
+void freeSymbols() {
+    int indexOfSymbol;
+    Symbol *symb;
+    for (indexOfSymbol = 0; indexOfSymbol < HASHSIZE; indexOfSymbol++) {
+        if ((symb = symbolHashTable.items[indexOfSymbol].item) != NULL) {
+            free(symb);
+            symbolHashTable.items[indexOfSymbol].item = NULL;
+        }
+    }
+}
+
+/*
+DEBUGGING FUNCTION
+*/
+void printSymbols() {
+    int indexOfSymbol;
+    Symbol *symb;
+    for (indexOfSymbol = 0; indexOfSymbol < HASHSIZE; indexOfSymbol++) {
+        if ((symb = symbolHashTable.items[indexOfSymbol].item) != NULL) {
+            printf("name: %s, value: %d, entry: %d, attr: %d\n", symb->symbol,symb->value,symb->entry,symb->attr );
+        }
+    }
 }
