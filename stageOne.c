@@ -1,4 +1,5 @@
 #include "data.h"
+
 extern HashTable macroHashTable;
 extern HashTable symbolHashTable;
 extern int IC, DC;
