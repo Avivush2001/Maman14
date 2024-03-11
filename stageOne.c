@@ -3,6 +3,7 @@ extern HashTable macroHashTable;
 extern HashTable symbolHashTable;
 extern int IC, DC;
 extern char * registersArr[], * instructionArr[];
+extern Operation operationsArr[];
 
 StageOneFlags stageOne(FILE *fp, char *fileName) {
     /*str1 is longer by one to make sure the ':' are in the character*/
