@@ -120,7 +120,7 @@ Nullify the possibleLabel (unless it is an address word, for that it will save t
 
 MemoryFlags insertOpBin(int opcode, int src, int dst) {
     INIT_BINARY_INSERTION
-    if (insertionFlag = memoryAvailable) {
+    if (insertionFlag == memoryAvailable) {
         newBinaryWord->bits[WORD_LENGTH] = '\0';
         insertIntoBinaryWord(newBinaryWord, 0, 0, 4);
         insertIntoBinaryWord(newBinaryWord, opcode, 4, 4);
@@ -131,8 +131,9 @@ MemoryFlags insertOpBin(int opcode, int src, int dst) {
         newBinaryWord->nextWord = NULL;
         if (headData == NULL){
             headData = newBinaryWord;
-        } else ADD_TO_MEMORY
-        
+        } else memoryTail->nextWord = newBinaryWord;
+        memoryTail = newBinaryWord;
+        IC++;
         insertionFlag = wordCreationSuccess;
     }
     

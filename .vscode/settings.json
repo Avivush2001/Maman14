@@ -28,6 +28,7 @@
         "macptr",
         "oldsuffix",
         "Preassembler",
+        "symb",
         "Wordd"
     ]
 }

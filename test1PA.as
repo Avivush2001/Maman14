@@ -1,6 +1,8 @@
 .define sz = 2
 MAIN:   mov r3, LIST[sz] 
 LOOP:   jmp  L1 
+.entry END
+M: .extern HELLO
 mcr  mmcr  
     cmp r3, #sz 
     bne END 
