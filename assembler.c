@@ -1,13 +1,11 @@
 #include "data.h"
 
 
-/*I made the items arrays global so Errors won't be thrown later*/
+/*Global Assembler Tables*/
 HashTableItem macroItems[HASHSIZE];
 HashTableItem symbolItems[HASHSIZE];
 HashTable macroHashTable = {macroItems, 0, hashTableFree};
 HashTable symbolHashTable = {symbolItems, 0, hashTableFree};
-    /*Operation operation1 = {"code", code, {True,True,True,True},{True,True,True,True} , 0},
-     operation2 = {"code2", code, {True,True,True,True},{True,True,True,True} , 0};*/
 
 int main() {
     /*Can't be initialized another way besides allocating memory.*/

@@ -9,7 +9,7 @@ extern Operation operationsArr[];
 StageOneFlags stageOne(FILE *fp, char *fileName) {
     /*str1 is longer by one to make sure the ':' are in the character*/
     char line[MAX_LINE_LENGTH];
-    int lineCounter = 1, stringsCounter, possibleOpCode;
+    int lineCounter = 1, possibleOpCode;
     Symbol *symb;
     StageOneFlags contextFlag, errorFlagSO; 
     DEFAULT_CONTEXT_SO
@@ -38,6 +38,8 @@ StageOneFlags lineContextSO(char *line, StageOneFlags oldContext, int *possibleO
 
     /*Check for comment line*/
     else if (*str1 == ';') contextFlag = skipLine;
+
+
     else{
         /*Checking if the first string can be a legal label*/
         if (isLabelDefinition(str1)) {
@@ -126,6 +128,9 @@ StageOneFlags lineContextSO(char *line, StageOneFlags oldContext, int *possibleO
     return contextFlag;
 }
 
+
+/*When checking for labels in operands don't use this function use the one
+in util.c*/
 Bool isLegalSymbol(char *possibleSymbol, Bool isConst) {
     Bool flag= isLabelLegal(possibleSymbol);
     Symbol *symb;
