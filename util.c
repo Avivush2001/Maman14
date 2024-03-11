@@ -135,7 +135,7 @@ int findInOperationsArray(char* word) {
 /*
 Given a string the function checks if it can Be a legal label.
 It first checks if the word is either: 
--pReserved
+-preserved
 -the first chAracter is an alphabetical letter
 -its size doesn't exceed the maximum allowed.
 if one of them is true, the flag 'ans' turns to false.
@@ -189,3 +189,4 @@ int countWordsInLine(char *line) {
     }
     return count;
 }
+

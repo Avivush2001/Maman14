@@ -40,6 +40,11 @@ typedef enum {
     allclearSO
 } StageOneFlags;
 
+typedef struct {
+    int isNum;
+    int result;
+} wholeNum;
+
 StageOneFlags stageOne(FILE *, char *);
 StageOneFlags lineContextSO(char *line, StageOneFlags oldContext, int *possibleOpCode);
 Bool isLegalSymbol(char *possibleSymbol, Bool isConst);

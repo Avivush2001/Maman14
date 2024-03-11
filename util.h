@@ -13,4 +13,3 @@ Bool isPreservedWord(char*);
 
 /*Counts words in a line*/
 int countWordsInLine(char*);
-

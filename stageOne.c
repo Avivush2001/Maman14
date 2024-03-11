@@ -185,3 +185,109 @@ void printSymbols() {
         }
     }
 }
+
+/* Checks if a string is a whole number- if not return 0, if it is return the number as a int */
+
+wholeNum string_to_int(const char *str) 
+{
+    wholeNum num;
+  if (str == NULL || *str == '\0') {
+    num.isNum = 0;
+    return num; // Empty string is not a number
+  }
+
+  int sign = 1; // 1 for positive, -1 for negative
+  if (*str == '+') {
+    str++; // Skip the positive sign if present
+  }
+  else if (*str == '-') {
+    sign = -1;
+    str++; // Skip the negative sign if present
+  }
+
+  long long int x = 0; // Use long long to handle larger numbers
+
+  while (*str) {
+    if (!isdigit(*str)) {
+      num.isNum = 0;
+      return num; // Invalid character encountered
+    }
+    int digit_value = *str - '0'; // Convert ASCII digit to numeric value
+    x = x * 10 + digit_value; // Build the integer
+
+    // Check for overflow/underflow 
+    if (x * sign < INT_MIN || x * sign > INT_MAX) {
+      x = (sign == 1 ? INT_MAX : INT_MIN); // Return max/min for overflow/underflow
+      num.result = x;
+      num.isNum = 1;
+      return num;
+    }
+
+    str++;
+  }
+
+  num.result = x;
+  num.isNum = 1;
+  return num;
+}
+
+Bool areLegalOperands(char *str, Field *field1, Field *field2)
+{
+    char *flag;
+    char *token;
+    const char *delimiter = ",";
+    int operandCounter = 0;
+    token = strtok(str, delimiter);
+    while(token != NULL && operandCounter <= 2)
+    {
+        if((token[0] != '#') && (isalpha(token[0]) == 0))
+        {
+            flag = "illegal operand";
+            return False;
+        }
+        if(token[0] == '#') /* it is possibly an immediate operand */
+        {
+            token++;
+            wholeNum num = string_to_int(token);
+            if(num.isNum == 1)
+            {
+                operandCounter++;
+                if(operandCounter == 1)
+                {
+                    field1->symbol = NULL;
+                    field1->type = immediate;
+                    field1->value = num.result;
+                }
+                if(operandCounter == 2)
+                {
+                    field2->symbol = NULL;
+                    field2->type = immediate;
+                    field2->value = num.result;
+                }
+            }
+            else if(isLegalSymbol(token, True) == True)
+            {
+                operandCounter++;
+                if(operandCounter == 1)
+                {
+                    field1->symbol = NULL;
+                    field1->type = immediate;
+                    field1->value = &symbolHashTable.items[lookUpTable(&symbolHashTable, token)].item;
+                }
+                if(operandCounter == 2)
+                {
+                    field2->symbol = NULL;
+                    field2->type = immediate;
+                    field2->value = &symbolHashTable.items[lookUpTable(&symbolHashTable, token)].item;
+                }
+            }
+            else
+            {
+                flag = "illegal number or an unrecognized label";
+                return False;
+            }
+        }
+
+        token = strtok(NULL, delimiter);
+    }
+}
