@@ -1,25 +1,30 @@
 #include "data.h"
 
 
-/*I made the items arrays global so Errors won't be thrown later*/
+/*Global Assembler Tables*/
 HashTableItem macroItems[HASHSIZE];
-
-    /*Operation operation1 = {"code", code, {True,True,True,True},{True,True,True,True} , 0},
-     operation2 = {"code2", code, {True,True,True,True},{True,True,True,True} , 0};*/
+HashTableItem symbolItems[HASHSIZE];
+HashTable macroHashTable = {macroItems, 0, hashTableFree};
+HashTable symbolHashTable = {symbolItems, 0, hashTableFree};
 
 int main() {
     /*Can't be initialized another way besides allocating memory.*/
-    SymbolHashTable macroHashTable = {macroItems, 0, hashTableFree};
-    FILE *fp, *nfp;
+    
+    FILE *fp;
     PreassemblerFlags flagPA;
-   
+    initializeHashTable(&macroHashTable);
+    initializeHashTable(&symbolHashTable);
     fp = fopen("test1PA.as", "r");
-    flagPA = preassembler(fp, "test1PA.am", &macroHashTable);
+    flagPA = preassembler(fp, "test1PA.am");
     if (flagPA == errorEncounteredPA) {
         remove("test1PA.am");
     }
     fclose(fp);
+    fp = fopen("test1PA.am", "r");
+    stageOne(fp, "test1PA");
+    fclose(fp);
     freeTableNames(&macroHashTable);
+    freeTableNames(&symbolHashTable);
     return 0;
 }
 

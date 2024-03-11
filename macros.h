@@ -7,13 +7,14 @@
 #define NOT_FOUND -1
 #define OPERATIONS_SIZE 16
 #define REGISTERS_SIZE 8
-#define INSTRUCTIONS_SIZE 6
+#define INSTRUCTIONS_SIZE 7
 #define MAX_DATA 8191
 #define MIN_DATA -8192
 #define MAX_CONST 2047
 #define MIN_CONST -2048
+#define OPEN_NEW_FILE nfp = fopen(fileName, "w");
 
-
+#define EXIT_IF(_bool) if (_bool) exit(EXIT_FAILURE);
 #define MALLOC_LINE malloc(sizeof(char) * MAX_LINE_LENGTH)
 #define MALLOC_LABEL malloc(sizeof(char) * MAX_LABEL_SIZE)
 #define READ_FIRST_TWO_FIELDS sscanf(line, "%31s %31s", str1, str2)

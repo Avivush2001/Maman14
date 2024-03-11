@@ -103,7 +103,7 @@ Operation operationsArr[] = {
 /*These hold the strings of the registers and other reserved words. For the
 registers array, each index represents its number.*/
 char * registersArr[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
-char * instructionArr[] = {".data",".string", ".entry" ,".extern", MACRO_DEF, MACRO_END};
+char * instructionArr[] = {".entry" ,".extern", ".define", ".data",".string", MACRO_DEF, MACRO_END};
 /*
 Given a string, a string array and its size, it checks if the string is in the array.
 If it is 'index' is updated. If not index stays NOT_FOUND. Returns the index.

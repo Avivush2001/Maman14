@@ -1,7 +1,7 @@
 #include "data.h"
 
 /*Initialize a hashtable by setting the itemCount to 0 and the flag to hashTableFree*/
-SymbolHashTable *initializeHashTable(SymbolHashTable *table) {
+HashTable *initializeHashTable(HashTable *table) {
     int i;
     ITERATE_HASHES {
         TABLE_NAME_AT(i) = "\0";
@@ -36,7 +36,7 @@ Given a table and a name, the function looks up the name in the table using the 
 If found 'index' will be updated to hash that found it.
 If not found 'index' will stay 'NOT_FOUND'.
 */
-int lookUpTable(SymbolHashTable *table, char *name) {
+int lookUpTable(HashTable *table, char *name) {
     int hash, i, key, in;
     in = NOT_FOUND;
     key = generateKey(name);
@@ -57,29 +57,29 @@ int lookUpTable(SymbolHashTable *table, char *name) {
 Given a table and a name to insert, the function in a simillar fashion to he look up function,
 searches the table for a free place to put the name. It also updates the item count and the flag if the table is full.
 */
-int insertToTable(SymbolHashTable *table, char *name) {
+int insertToTable(HashTable *table, char *name) {
     int hash, i, key, in;
     key = generateKey(name);
     in = NOT_FOUND;
-    ITERATE_HASHES {
-        hash = generateHash(key, i);
-        if(*TABLE_NAME_AT(hash) == '\0') {
-            if ((TABLE_NAME_AT(hash) = MALLOC_LABEL) != NULL) {
+    if (table->flag != hashTableFull) {
+        ITERATE_HASHES {
+            hash = generateHash(key, i);
+            if(*TABLE_NAME_AT(hash) == '\0') {
+                EXIT_IF((TABLE_NAME_AT(hash) = MALLOC_LABEL) == NULL)
                 TABLE_NAME_AT(hash) = strcpy(TABLE_NAME_AT(hash), name);
                 table->itemCount++;
                 in = hash;
+                break;
             }
-            break;
+            if (table->itemCount == (HASHSIZE)) table->flag = hashTableFull;
         }
     }
-    if (table->itemCount == (HASHSIZE)) table->flag = hashTableFull;
-    
     return in;
 }
 
 /*Frees hashtable items' names. It's the responsibility of other functions to 
 free the pointer and its contents.*/
-SymbolHashTable *freeTableNames(SymbolHashTable *table) {
+HashTable *freeTableNames(HashTable *table) {
     int i;
     char* name;
     ITERATE_HASHES {
