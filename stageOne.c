@@ -5,6 +5,24 @@
 extern int IC = 0;
 extern int DC = 0;
 int L = 0;
+char *flag;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* we are going to perform stage1 according to the algorithm described in the project instructions and save the symbols in a hash table*/
 

@@ -133,7 +133,7 @@ int findInOperationsArray(char* word) {
 
 
 /*
-Given a string the function checks if it can Be a leAal label.
+Given a string the function checks if it can Be a legal label.
 It first checks if the word is either: 
 -pReserved
 -the first chAracter is an alphabetical letter
