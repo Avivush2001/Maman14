@@ -302,20 +302,24 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
             else if((i = lookUpTable(&symbolHashTable, token)) != NOT_FOUND) /*Wrong use of this function*/
             {
                 Symbol *symb = symbolHashTable.items[i].item;
+                if (symb->attr == constant) {
+                    operandCounter++;
+                    if(operandCounter == 1)
+                    {
+                        field1->symbol = NULL;
+                        field1->type = immediate;
+                        field1->value = symb->value;
+                    }
+                    if(operandCounter == 2)
+                    {
+                        field2->symbol = NULL;
+                        field2->type = immediate;
+                        field2->value = symb->value;
+                    }
+                } else {
+                    flag = illegalConstantOperand;
+                }
                 
-                operandCounter++;
-                if(operandCounter == 1)
-                {
-                    field1->symbol = NULL;
-                    field1->type = immediate;
-                    field1->value = symb->value;
-                }
-                if(operandCounter == 2)
-                {
-                    field2->symbol = NULL;
-                    field2->type = immediate;
-                    field2->value = symb->value;
-                }
             }
             else
             {
