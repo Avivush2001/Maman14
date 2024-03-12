@@ -37,6 +37,8 @@ typedef enum {
     errorIllegalSymbol,
     errorSymbolHashTableFull,
     errorDefiningLabel,
+    errorDefiningConstant,
+    errorIllegalSymbolOrTableFull,
     allclearSO
 } StageOneFlags;
 

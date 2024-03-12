@@ -163,10 +163,82 @@ Bool isLabelDefinition(char* possibleLabel) {
 }
 
 /*Should be called only if the "externDefinition" flag is on*/
-StageOneFlags insertExternalLabels(char *line) {
-    char *p = strchr(line, '.') + 7;
+StageOneFlags defineExternalLabels(char *line) {
+    char *p = strchr(line, '.') + 7, *token, *delimiter = " ";
+    StageOneFlags flag;
+    Symbol *symb;
+    int i;
+    token = strtok(p, delimiter);
+    while(token != NULL) {
+        if(isLegalSymbol(token, False) && (i = insertToTable(&symbolHashTable, token)) != NOT_FOUND) {
+            i = insertToTable(&symbolHashTable, token);
+            symb = MALLOC_SYMBOL;
+            EXIT_IF(symb == NULL)
+            symb->symbol = symbolHashTable.items[i].name;
+            symb->attr = external;
+            symb->value = 0;
+            symb->entry = False;
+            flag = allclearSO;
+        } else {
+            flag = errorIllegalSymbolOrTableFull;
+            break;
+        }
+        token = strtok(NULL, delimiter);
+    }
+    return flag;
 }
-
+StageOneFlags defineEntryLabel(char *line) {
+    char *p = strchr(line, '.') + 6, *token, *delimiter = " ";
+    StageOneFlags flag;
+    Symbol *symb;
+    int i;
+    token = strtok(p, delimiter);
+    while(token != NULL) {
+        if(isLegalSymbol(token, False) && (i = insertToTable(&symbolHashTable, token)) != NOT_FOUND) {
+            symb = MALLOC_SYMBOL;
+            EXIT_IF(symb == NULL)
+            symb->symbol = symbolHashTable.items[i].name;
+            symb->attr = undefined;
+            symb->value = 0;
+            symb->entry = True;
+            flag = allclearSO;
+        } else {
+            flag = errorIllegalSymbolOrTableFull;
+            break;
+        }
+        token = strtok(NULL, delimiter);
+    }
+    return flag;
+}
+StageOneFlags defineConstant(char *line) {
+    char *p = strchr(line, '.') + 7, str1[MAX_LABEL_SIZE], str2[MAX_LABEL_SIZE], str3[MAX_LABEL_SIZE] ,garbage[2];
+    StageOneFlags flag;
+    int i;
+    Symbol *symb;
+    wholeNum value;
+    *str1 = '\0';
+    *str2 = '\0';
+    *str3 = '\0';
+    *garbage = '\0';
+    sscanf(p, "%31s %31s %31s %1s", str1,str2, str3, garbage);
+    if (*str3 =='\0' && strcmp(str1,"=") && *str2=='\0' && *garbage!='\0') {
+        flag = errorDefiningConstant;
+    } else {
+        value = string_to_int(str3);
+        if (isLegalSymbol(str1, True)  && (i = insertToTable(&symbolHashTable, str1)) != NOT_FOUND && value.isNum) {
+            symb = MALLOC_SYMBOL;
+            EXIT_IF(symb == NULL)
+            symb->symbol = symbolHashTable.items[i].name;
+            symb->attr = constant;
+            symb->value = value.result;
+            symb->entry = False;
+            flag = allclearSO;
+        } else {
+            flag = errorIllegalSymbolOrTableFull;
+        }
+    }
+    return flag;
+}
 void freeSymbols() {
     int indexOfSymbol;
     Symbol *symb;
