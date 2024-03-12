@@ -172,6 +172,10 @@ void freeSymbols() {
         }
     }
 }
+/*Should be called only if the "externDefinition" flag is on*/
+StageOneFlags insertExternalLabels(char *line) {
+    char *p = strchr(line, '.') + 7;
+}
 
 /*
 DEBUGGING FUNCTION
@@ -192,52 +196,55 @@ void printSymbols() {
 /*Return a Bool instead?*/
 wholeNum string_to_int(const char *str) /*Why is this a constant?*/
 {
-    wholeNum num;
+    wholeNum num = {True,0};
+    int sign = 1, i = 0, x = 0, digit_value; /*1 for positive, -1 for negative*/
   if (str == NULL || *str == '\0') {
-    num.isNum = 0;
-    return num; /*Empty string is not a number*/
-  }
-
-  int sign = 1; /*1 for positive, -1 for negative*/
-  if (*str == '+') {
+    num.isNum = False;
+    /*num.isNum = 0;
+    return num;*/ /*Empty string is not a number*/
+  } else if (*str == '+') {
     str++; /*Skip the positive sign if present*/
   }
   else if (*str == '-') {
     sign = -1;
     str++; /*Skip the negative sign if present*/ 
   }
-
-  long long int x = 0; /*Use long long to handle larger numbers*/
-
-  while (*str) {
-    if (!isdigit(*str)) {
-      num.isNum = 0;
-      return num; /*Invalid character encountered*/
+  
+    /*-546*/
+  while (*str && num.isNum && i<=5) {
+    
+    if (!isdigit(*str) || (i == 5 && isgraph(*str))) {
+      num.isNum = False;
+      /*return num;*/ /*Invalid character encountered*/
     }
-    int digit_value = *str - '0'; /*Convert ASCII digit to numeric value*/
-    x = x * 10 + digit_value; /*Build the integer*/
+    else {
+        if (i < 5) {
+            digit_value = *str - '0'; /*Convert ASCII digit to numeric value*/
+        x = x * 10 + digit_value; /*Build the integer*/
 
-    /*Check for overflow/underflow */
-    if (x * sign < INT_MIN || x * sign > INT_MAX) {
-      x = (sign == 1 ? INT_MAX : INT_MIN); /*Return max/min for overflow/underflow*/
-      num.result = x;
-      num.isNum = 1;
-      return num;
+        /*Check for overflow/underflow */
+        /*if (x * sign < INT_MIN || x * sign > INT_MAX) {
+        x = (sign == 1 ? INT_MAX : INT_MIN); 
+        num.result = x;
+        num.isNum = 1;
+        return num;
+        }*/ /*Return max/min for overflow/underflow*/
+        i++;
+        str++;
+        }
+        
     }
-
-    str++;
   }
 
-  num.result = x;
-  num.isNum = 1;
+  num.result = x*sign;
   return num;
 } /*DONT do returns in the middle of a function. Maybe use a boolean flag that changes during the function and return it*/
 
 /*Keep the return value to be a boolean. It will signal to the rest of the program
 that the fields were correctly inputted. If an issue occurs it should return false*/
-Bool areLegalOperands(char *str, Field *field1, Field *field2)
+OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
 {
-    char *flag;/*No string flags*/
+    OperandsFlags flag;/*No string flags*/
     char *token;
     const char *delimiter = " , "; /*I added to the delimiter space characters too, so the should be strings without spaces*/
     int operandCounter = 0;
@@ -245,16 +252,30 @@ Bool areLegalOperands(char *str, Field *field1, Field *field2)
     while(token != NULL && operandCounter <= 2)
     {
         /*Maybe change this to a switch statement?*/
-        if((token[0] != '#') && (isalpha(token[0]) == 0))
+        /*if((token[0] != '#') && (!isalpha(token[0])))
         {
-            flag = "illegal operand";
-            return False;
+            flag = illegalOperand;
+        }*/
+        flag = getOperandType(token);
+        switch(flag) {
+            case isConstant:
+                break;
+            case isLabel:
+                break;
+            case isArray:
+                break;
+            case isRegister:
+                break;
+            default:
+                /*error handling*/
+                break;
+            
         }
         if(token[0] == '#') /* it is possibly an immediate operand */
         {
-            token++;
-            wholeNum num = string_to_int(token); /*NO DECLARATIONS IN THE MIDDLE OF A FUNCTION*/
-            if(num.isNum == 1)
+            wholeNum num = string_to_int(++token);
+            
+            if(num.isNum)
             {
                 operandCounter++;
                 if(operandCounter == 1)
@@ -288,8 +309,7 @@ Bool areLegalOperands(char *str, Field *field1, Field *field2)
             }
             else
             {
-                flag = "illegal number or an unrecognized label";
-                return False;
+                flag = illegalConstantOperand;
             }
         }
 

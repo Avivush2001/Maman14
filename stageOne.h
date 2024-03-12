@@ -40,8 +40,18 @@ typedef enum {
     allclearSO
 } StageOneFlags;
 
+typedef enum {
+    isConstant,
+    isLabel,
+    isArray,
+    isRegister,
+    illegalOperand,
+    illegalConstantOperand,
+    illegalLabel
+} OperandsFlags;
+
 typedef struct {
-    int isNum; /*Change to Bool?*/
+    Bool isNum; /*Change to Bool?*/
     int result;
 } wholeNum;
 
