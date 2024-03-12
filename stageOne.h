@@ -54,8 +54,6 @@ typedef enum {
     illegalLabel
 } OperandsFlags;
 
-
-
 StageOneFlags stageOne(FILE *, char *);
 StageOneFlags lineContextSO(char *, int *);
 Bool isLegalSymbol(char *, Bool);

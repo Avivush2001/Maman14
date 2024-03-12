@@ -218,6 +218,7 @@ StageOneFlags defineExternOrEntryLabels(char *line, Bool isEntry) {
     }
     return flag;
 }
+
 StageOneFlags defineConstant(char *line) {
     char *p = strchr(line, '.') + 7, str1[MAX_LABEL_SIZE], str2[MAX_LABEL_SIZE], str3[MAX_LABEL_SIZE] ,garbage[2];
     StageOneFlags flag;
@@ -225,8 +226,8 @@ StageOneFlags defineConstant(char *line) {
     Symbol *symb;
     wholeNum value = {False, 0};
     *str1 = *str2 = *str3 = *garbage ='\0';
-    sscanf(p, "%31s %31s %31s %1s", str1,str2, str3, garbage);
-    if (*str3 =='\0' && strcmp(str1,"=") && *str2=='\0' && *garbage!='\0') {
+    sscanf(p, "%31s %31s %31s %1s", str1, str2, str3, garbage);
+    if (*str3 == '\0' && strcmp(str1 ,"=") && *str2=='\0' && *garbage != '\0') {
         flag = errorDefiningConstant;
     } else {
         value = string_to_int(str3);
@@ -286,7 +287,8 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
         
         flag = getOperandType(token);
         switch(flag) {
-            case isConstant:{
+            case isConstant:
+            {
                 wholeNum num = string_to_int(++token);
                 int i;
                 if(num.isNum)
@@ -294,43 +296,41 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
                     operandCounter++;
                     if(operandCounter == 1)
                     {
-                    field1->symbol = NULL;
-                    field1->type = immediate;
-                    field1->value = num.result;
-                }
-                if(operandCounter == 2)
-                {
-                    field2->symbol = NULL;
-                    field2->type = immediate;
-                    field2->value = num.result;
-                }
-            }
-            else if((i = lookUpTable(&symbolHashTable, token)) != NOT_FOUND) /*Wrong use of this function*/
-            {
-                Symbol *symb = symbolHashTable.items[i].item;
-                if (symb->attr == constant) {
-                    operandCounter++;
-                    if(operandCounter == 1)
-                    {
                         field1->symbol = NULL;
                         field1->type = immediate;
-                        field1->value = symb->value;
+                        field1->value = num.result;
                     }
                     if(operandCounter == 2)
                     {
                         field2->symbol = NULL;
                         field2->type = immediate;
-                        field2->value = symb->value;
+                        field2->value = num.result;
                     }
-                } else {
-                    flag = illegalConstantOperand;
                 }
-                
-            }
-            else
-            {
-                flag = illegalConstantOperand;
-            }
+                else if((i = lookUpTable(&symbolHashTable, token)) != NOT_FOUND) 
+                {
+                    Symbol *symb = symbolHashTable.items[i].item;
+                    if (symb->attr == constant) 
+                    {
+                        operandCounter++;
+                        if(operandCounter == 1)
+                        {
+                            field1->symbol = NULL;
+                            field1->type = immediate;
+                            field1->value = symb->value;
+                        }
+                        if(operandCounter == 2)
+                        {
+                            field2->symbol = NULL;
+                            field2->type = immediate;
+                            field2->value = symb->value;
+                        }
+                    } 
+                    else 
+                        flag = illegalConstantOperand;
+                }
+                else
+                    flag = illegalConstantOperand;
                 break;
             }
                 
@@ -351,14 +351,18 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
     }
 }
 
-OperandsFlags getOperandType(char *token) {
-    /*if((token[0] != '#') && (!isalpha(token[0])))
-        {
-            flag = illegalOperand;
-        }*/
-/* it is possibly an immediate operand */
-        /*if(token[0] == '#') 
-        {
-            
-        }*/
+OperandsFlags getOperandType(char *token) 
+{
+    OperandsFlags flag;
+    if((token[0] != '#') && (!isalpha(token[0])))
+        flag = illegalOperand;
+
+    else if(token[0] == '#') 
+        flag = isConstant;
+
+    else if(isLabelLegal(token) == True)
+        flag = isLabel;
+        
+    else if()
+
 }

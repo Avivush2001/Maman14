@@ -190,11 +190,11 @@ int countWordsInLine(char *line) {
     return count;
 }
 
-/* Checks if a string is a whole number- if not return 0, if it is return the number as a int */
+/* Checks if a string is a whole number- if it is return the number as a int */
 wholeNum string_to_int(const char *str)
 {
     wholeNum num = {True,0};
-    int sign = 1, i = 0, x = 0, digit_value; /*1 for positive, -1 for negative*/
+    int sign = 1, i = 0, x = 0, digit_value; /*sign: 1 for positive, -1 for negative*/
   if (str == NULL || *str == '\0') {
     num.isNum = False;
   } else if (*str == '+') {
@@ -205,24 +205,52 @@ wholeNum string_to_int(const char *str)
     str++; /*Skip the negative sign if present*/ 
   }
   
-  while (*str && num.isNum && i<=5) {
+  while (*str && num.isNum) {
     
-    if (!isdigit(*str) || (i == 5 && isgraph(*str))) {
+    if (!isdigit(*str) || i == 4) { /*Invalid character encountered*/
       num.isNum = False;
-      /*return num;*/ /*Invalid character encountered*/
     }
     else {
-        if (i < 5) {
             digit_value = *str - '0'; /*Convert ASCII digit to numeric value*/
-        x = x * 10 + digit_value; /*Build the integer*/
-        i++;
-        str++;
+            x = x * 10 + digit_value; /*Build the integer*/
+            i++;
+            str++;
         }
+  }
+  num.result = x * sign;
+  return num;
+}
+
+Bool isLegalArray(const char *str)
+{
+    Bool flag = True;
+    char *left = NULL, *right = NULL, *temp = NULL;
+    int i, size = strlen(str);
+    if(str == NULL || str[0] == '\0')
+        flag = False;
+
+    else if(isalpha(str[0]) == 0)
+        flag = False;
+    
+    else
+    {
+        left = strpbrk(str, "[");
+        right = strpbrk(str, "]");
+        if(left == NULL || right == NULL) /* There are no brackets in the string so definitely not array */
+            flag = False;
+        
+        else if(left > right) /* '[' has to come before ']' */
+            flag = False;
+        
+        else
+        {
+            
+        }
+    }
+
+    for(i = 0; str[i] != '\0' && isalpha(str[i]) != 0)
+    {
         
     }
-  }
-
-  num.result = x*sign;
-  return num;
 }
 
