@@ -16,16 +16,40 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
     errorFlagSO = allclearSO;
     while(fgets(line, MAX_LINE_LENGTH, fp) != NULL && errorFlagSO != errorEncounteredSO) {
         possibleOpCode = NOT_FOUND;
-        contextFlag = lineContextSO(line, contextFlag, &possibleOpCode);
+        contextFlag = lineContextSO(line, &possibleOpCode);
         printf("line %d, flag: %d, opcode: %d\n", lineCounter, contextFlag, possibleOpCode);
+        switch(contextFlag) {
+            case entryDefinition:
+                contextFlag = defineExternOrEntryLabels(line,True);
+                printf("%d\n", contextFlag);
+                break;
+            case externDefinition:
+                contextFlag = defineExternOrEntryLabels(line,False);
+                printf("%d\n", contextFlag);
+                break;
+            case constantDefinition:
+                contextFlag = defineConstant(line);
+                printf("%d\n", contextFlag);
+                break;
+            default:
+                break;
+        }
         lineCounter++;
     }
     printSymbols();
     freeSymbols();
 }
 
-
-StageOneFlags lineContextSO(char *line, StageOneFlags oldContext, int *possibleOpCode) {
+/*Return flags besides errors:
+skipLine
+isData
+isString
+isOperation
+entryDefinition
+externDefinition
+constantDefinition
+*/
+StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
     int i, stringsCounter;
     Symbol *symb = NULL;
     HashTableItem *symbolItem;
@@ -163,46 +187,30 @@ Bool isLabelDefinition(char* possibleLabel) {
 }
 
 /*Should be called only if the "externDefinition" flag is on*/
-StageOneFlags defineExternalLabels(char *line) {
-    char *p = strchr(line, '.') + 7, *token, *delimiter = " ";
+
+StageOneFlags defineExternOrEntryLabels(char *line, Bool isEntry) {
+    char *p, *token, *delimiter = " \n";
     StageOneFlags flag;
     Symbol *symb;
     int i;
-    token = strtok(p, delimiter);
-    while(token != NULL) {
-        if(isLegalSymbol(token, False) && (i = insertToTable(&symbolHashTable, token)) != NOT_FOUND) {
-            i = insertToTable(&symbolHashTable, token);
-            symb = MALLOC_SYMBOL;
-            EXIT_IF(symb == NULL)
-            symb->symbol = symbolHashTable.items[i].name;
-            symb->attr = external;
-            symb->value = 0;
-            symb->entry = False;
-            flag = allclearSO;
-        } else {
-            flag = errorIllegalSymbolOrTableFull;
-            break;
-        }
-        token = strtok(NULL, delimiter);
-    }
-    return flag;
-}
-StageOneFlags defineEntryLabel(char *line) {
-    char *p = strchr(line, '.') + 6, *token, *delimiter = " ";
-    StageOneFlags flag;
-    Symbol *symb;
-    int i;
+    if (isEntry)
+        p = strchr(line, '.') + 6;
+    else p = strchr(line, '.') + 7;
     token = strtok(p, delimiter);
     while(token != NULL) {
         if(isLegalSymbol(token, False) && (i = insertToTable(&symbolHashTable, token)) != NOT_FOUND) {
             symb = MALLOC_SYMBOL;
             EXIT_IF(symb == NULL)
             symb->symbol = symbolHashTable.items[i].name;
-            symb->attr = undefined;
+            if (isEntry) {
+                symb->attr = undefined;
+            } else symb->attr = external;
+            symb->entry = isEntry;
             symb->value = 0;
-            symb->entry = True;
+            symbolHashTable.items[i].item = symb;
             flag = allclearSO;
         } else {
+            printf("%s\n", token);
             flag = errorIllegalSymbolOrTableFull;
             break;
         }
@@ -215,23 +223,21 @@ StageOneFlags defineConstant(char *line) {
     StageOneFlags flag;
     int i;
     Symbol *symb;
-    wholeNum value;
-    *str1 = '\0';
-    *str2 = '\0';
-    *str3 = '\0';
-    *garbage = '\0';
+    wholeNum value = {False, 0};
+    *str1 = *str2 = *str3 = *garbage ='\0';
     sscanf(p, "%31s %31s %31s %1s", str1,str2, str3, garbage);
     if (*str3 =='\0' && strcmp(str1,"=") && *str2=='\0' && *garbage!='\0') {
         flag = errorDefiningConstant;
     } else {
         value = string_to_int(str3);
-        if (isLegalSymbol(str1, True)  && (i = insertToTable(&symbolHashTable, str1)) != NOT_FOUND && value.isNum) {
+        if (isLegalSymbol(str1, True)  && (i = insertToTable(&symbolHashTable, str1)) != NOT_FOUND && value.isNum && IN_CONST_RANGE(value.result)) {
             symb = MALLOC_SYMBOL;
             EXIT_IF(symb == NULL)
             symb->symbol = symbolHashTable.items[i].name;
             symb->attr = constant;
             symb->value = value.result;
             symb->entry = False;
+            symbolHashTable.items[i].item = symb;
             flag = allclearSO;
         } else {
             flag = errorIllegalSymbolOrTableFull;
@@ -272,7 +278,7 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
     
     OperandsFlags flag;
     char *token;
-    const char *delimiter = " , ";
+    const char *delimiter = " , \n";
     int operandCounter = 0;
     token = strtok(str, delimiter);
     while(token != NULL && operandCounter <= 2)
