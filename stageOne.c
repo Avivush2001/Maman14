@@ -288,8 +288,6 @@ void printSymbols() {
         }
     }
     
-    
-    
 }
 
 OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
@@ -371,11 +369,8 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
 
 OperandsFlags getOperandType(char *token) 
 {
-    OperandsFlags flag;
-    if((token[0] != '#') && (!isalpha(token[0])))
-        flag = illegalOperand;
-
-    else if(token[0] == '#') 
+    OperandsFlags flag = illegalOperand;
+    if(token[0] == '#') 
         flag = isConstant;
 
     else if(isLabelLegal(token) == True)
@@ -386,7 +381,5 @@ OperandsFlags getOperandType(char *token)
 
     else if(findInStringArray(token, registersArr, 8) != -1)
         flag = isRegister;
-    else
-        flag = illegalOperand;
     return flag;
 }

@@ -224,7 +224,7 @@ wholeNum string_to_int(const char *str)
 Bool isLegalArray(const char *str)
 {
     Bool flag = True;
-    char *left = NULL, *right = NULL, *temp = NULL;
+    char *left = NULL, *right = NULL, temp[MAX_LABEL_SIZE];
     int i, size = strlen(str);
     if(str == NULL || str[0] == '\0')
         flag = False;
@@ -249,6 +249,7 @@ Bool isLegalArray(const char *str)
         {
             i = size - strlen(left);
             strncpy(temp, str, i);
+            printf("%s %s\n", str, temp);
             if(isLabelLegal(temp) == False)
                 flag = False;
             
@@ -262,6 +263,8 @@ Bool isLegalArray(const char *str)
                     size = strlen(left);
                     i = size - strlen(right);
                     strncpy(temp, left, i);
+                    temp[i] = '\0';
+                    printf("%s %s\n", str, temp);
                     if(isLabelLegal(temp) == False && string_to_int(temp).isNum == False)
                         flag = False;
                 }
