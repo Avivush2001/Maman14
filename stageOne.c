@@ -368,7 +368,9 @@ OperandsFlags getOperandType(char *token)
 
     else if(findInStringArray(token, registersArr, 8) != -1)
         flag = isRegister;
+        
     else
         flag = illegalOperand;
+
     return flag;
 }
