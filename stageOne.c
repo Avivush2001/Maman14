@@ -380,7 +380,13 @@ OperandsFlags getOperandType(char *token)
 
     else if(isLabelLegal(token) == True)
         flag = isLabel;
-        
-    else if(1);
 
+    else if(isLegalArray(token) == True)
+        flag = isArray;
+
+    else if(findInStringArray(token, registersArr, 8) != -1)
+        flag = isRegister;
+    else
+        flag = illegalOperand;
+    return flag;
 }

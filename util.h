@@ -18,3 +18,4 @@ Bool isPreservedWord(char*);
 int countWordsInLine(char*);
 
 wholeNum string_to_int(const char *);
+Bool isLegalArray(const char *);

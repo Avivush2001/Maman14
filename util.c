@@ -242,15 +242,32 @@ Bool isLegalArray(const char *str)
         else if(left > right) /* '[' has to come before ']' */
             flag = False;
         
+        else if(*(right + 1) != '\0') /* If it is an array the char ']' has to be the last in the string */
+            flag = False; 
+        
         else
         {
+            i = size - strlen(left);
+            strncpy(temp, str, i);
+            if(isLabelLegal(temp) == False)
+                flag = False;
             
+            else
+            {
+                left++;
+                if(left == right) /* empty brackets ('[]') */
+                    flag = False;
+                else
+                {
+                    size = strlen(left);
+                    i = size - strlen(right);
+                    strncpy(temp, left, i);
+                    if(isLabelLegal(temp) == False && string_to_int(temp).isNum == False)
+                        flag = False;
+                }
+            }
         }
     }
-
-    for(i = 0; str[i] != '\0' && isalpha(str[i]) != 0)
-    {
-        
-    }
+    return flag;
 }
 
