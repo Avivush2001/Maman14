@@ -50,10 +50,7 @@ typedef enum {
     illegalLabel
 } OperandsFlags;
 
-typedef struct {
-    Bool isNum; /*Change to Bool?*/
-    int result;
-} wholeNum;
+
 
 StageOneFlags stageOne(FILE *, char *);
 StageOneFlags lineContextSO(char *line, StageOneFlags oldContext, int *possibleOpCode);
