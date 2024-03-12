@@ -41,7 +41,7 @@ typedef enum {
 } StageOneFlags;
 
 typedef struct {
-    int isNum;
+    int isNum; /*Change to Bool?*/
     int result;
 } wholeNum;
 

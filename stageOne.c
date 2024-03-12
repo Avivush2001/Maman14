@@ -184,40 +184,42 @@ void printSymbols() {
             printf("name: %s, value: %d, entry: %d, attr: %d\n", symb->symbol,symb->value,symb->entry,symb->attr );
         }
     }
+    
+    
 }
 
 /* Checks if a string is a whole number- if not return 0, if it is return the number as a int */
-
-wholeNum string_to_int(const char *str) 
+/*Return a Bool instead?*/
+wholeNum string_to_int(const char *str) /*Why is this a constant?*/
 {
     wholeNum num;
   if (str == NULL || *str == '\0') {
     num.isNum = 0;
-    return num; // Empty string is not a number
+    return num; /*Empty string is not a number*/
   }
 
-  int sign = 1; // 1 for positive, -1 for negative
+  int sign = 1; /*1 for positive, -1 for negative*/
   if (*str == '+') {
-    str++; // Skip the positive sign if present
+    str++; /*Skip the positive sign if present*/
   }
   else if (*str == '-') {
     sign = -1;
-    str++; // Skip the negative sign if present
+    str++; /*Skip the negative sign if present*/ 
   }
 
-  long long int x = 0; // Use long long to handle larger numbers
+  long long int x = 0; /*Use long long to handle larger numbers*/
 
   while (*str) {
     if (!isdigit(*str)) {
       num.isNum = 0;
-      return num; // Invalid character encountered
+      return num; /*Invalid character encountered*/
     }
-    int digit_value = *str - '0'; // Convert ASCII digit to numeric value
-    x = x * 10 + digit_value; // Build the integer
+    int digit_value = *str - '0'; /*Convert ASCII digit to numeric value*/
+    x = x * 10 + digit_value; /*Build the integer*/
 
-    // Check for overflow/underflow 
+    /*Check for overflow/underflow */
     if (x * sign < INT_MIN || x * sign > INT_MAX) {
-      x = (sign == 1 ? INT_MAX : INT_MIN); // Return max/min for overflow/underflow
+      x = (sign == 1 ? INT_MAX : INT_MIN); /*Return max/min for overflow/underflow*/
       num.result = x;
       num.isNum = 1;
       return num;
@@ -229,17 +231,20 @@ wholeNum string_to_int(const char *str)
   num.result = x;
   num.isNum = 1;
   return num;
-}
+} /*DONT do returns in the middle of a function. Maybe use a boolean flag that changes during the function and return it*/
 
+/*Keep the return value to be a boolean. It will signal to the rest of the program
+that the fields were correctly inputted. If an issue occurs it should return false*/
 Bool areLegalOperands(char *str, Field *field1, Field *field2)
 {
-    char *flag;
+    char *flag;/*No string flags*/
     char *token;
-    const char *delimiter = ",";
+    const char *delimiter = " , "; /*I added to the delimiter space characters too, so the should be strings without spaces*/
     int operandCounter = 0;
     token = strtok(str, delimiter);
     while(token != NULL && operandCounter <= 2)
     {
+        /*Maybe change this to a switch statement?*/
         if((token[0] != '#') && (isalpha(token[0]) == 0))
         {
             flag = "illegal operand";
@@ -248,7 +253,7 @@ Bool areLegalOperands(char *str, Field *field1, Field *field2)
         if(token[0] == '#') /* it is possibly an immediate operand */
         {
             token++;
-            wholeNum num = string_to_int(token);
+            wholeNum num = string_to_int(token); /*NO DECLARATIONS IN THE MIDDLE OF A FUNCTION*/
             if(num.isNum == 1)
             {
                 operandCounter++;
@@ -265,7 +270,7 @@ Bool areLegalOperands(char *str, Field *field1, Field *field2)
                     field2->value = num.result;
                 }
             }
-            else if(isLegalSymbol(token, True) == True)
+            else if(isLegalSymbol(token, True) == True) /*Wrong use of this function*/
             {
                 operandCounter++;
                 if(operandCounter == 1)
