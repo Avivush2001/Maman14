@@ -190,3 +190,39 @@ int countWordsInLine(char *line) {
     return count;
 }
 
+/* Checks if a string is a whole number- if not return 0, if it is return the number as a int */
+wholeNum string_to_int(const char *str)
+{
+    wholeNum num = {True,0};
+    int sign = 1, i = 0, x = 0, digit_value; /*1 for positive, -1 for negative*/
+  if (str == NULL || *str == '\0') {
+    num.isNum = False;
+  } else if (*str == '+') {
+    str++; /*Skip the positive sign if present*/
+  }
+  else if (*str == '-') {
+    sign = -1;
+    str++; /*Skip the negative sign if present*/ 
+  }
+  
+  while (*str && num.isNum && i<=5) {
+    
+    if (!isdigit(*str) || (i == 5 && isgraph(*str))) {
+      num.isNum = False;
+      /*return num;*/ /*Invalid character encountered*/
+    }
+    else {
+        if (i < 5) {
+            digit_value = *str - '0'; /*Convert ASCII digit to numeric value*/
+        x = x * 10 + digit_value; /*Build the integer*/
+        i++;
+        str++;
+        }
+        
+    }
+  }
+
+  num.result = x*sign;
+  return num;
+}
+

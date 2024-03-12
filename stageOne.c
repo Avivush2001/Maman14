@@ -162,6 +162,11 @@ Bool isLabelDefinition(char* possibleLabel) {
     return flag;
 }
 
+/*Should be called only if the "externDefinition" flag is on*/
+StageOneFlags insertExternalLabels(char *line) {
+    char *p = strchr(line, '.') + 7;
+}
+
 void freeSymbols() {
     int indexOfSymbol;
     Symbol *symb;
@@ -172,10 +177,7 @@ void freeSymbols() {
         }
     }
 }
-/*Should be called only if the "externDefinition" flag is on*/
-StageOneFlags insertExternalLabels(char *line) {
-    char *p = strchr(line, '.') + 7;
-}
+
 
 /*
 DEBUGGING FUNCTION
@@ -190,96 +192,30 @@ void printSymbols() {
     }
     
     
+    
 }
 
-/* Checks if a string is a whole number- if not return 0, if it is return the number as a int */
-/*Return a Bool instead?*/
-wholeNum string_to_int(const char *str) /*Why is this a constant?*/
-{
-    wholeNum num = {True,0};
-    int sign = 1, i = 0, x = 0, digit_value; /*1 for positive, -1 for negative*/
-  if (str == NULL || *str == '\0') {
-    num.isNum = False;
-    /*num.isNum = 0;
-    return num;*/ /*Empty string is not a number*/
-  } else if (*str == '+') {
-    str++; /*Skip the positive sign if present*/
-  }
-  else if (*str == '-') {
-    sign = -1;
-    str++; /*Skip the negative sign if present*/ 
-  }
-  
-    /*-546*/
-  while (*str && num.isNum && i<=5) {
-    
-    if (!isdigit(*str) || (i == 5 && isgraph(*str))) {
-      num.isNum = False;
-      /*return num;*/ /*Invalid character encountered*/
-    }
-    else {
-        if (i < 5) {
-            digit_value = *str - '0'; /*Convert ASCII digit to numeric value*/
-        x = x * 10 + digit_value; /*Build the integer*/
-
-        /*Check for overflow/underflow */
-        /*if (x * sign < INT_MIN || x * sign > INT_MAX) {
-        x = (sign == 1 ? INT_MAX : INT_MIN); 
-        num.result = x;
-        num.isNum = 1;
-        return num;
-        }*/ /*Return max/min for overflow/underflow*/
-        i++;
-        str++;
-        }
-        
-    }
-  }
-
-  num.result = x*sign;
-  return num;
-} /*DONT do returns in the middle of a function. Maybe use a boolean flag that changes during the function and return it*/
-
-/*Keep the return value to be a boolean. It will signal to the rest of the program
-that the fields were correctly inputted. If an issue occurs it should return false*/
 OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
 {
-    OperandsFlags flag;/*No string flags*/
+    
+    OperandsFlags flag;
     char *token;
-    const char *delimiter = " , "; /*I added to the delimiter space characters too, so the should be strings without spaces*/
+    const char *delimiter = " , ";
     int operandCounter = 0;
     token = strtok(str, delimiter);
     while(token != NULL && operandCounter <= 2)
     {
-        /*Maybe change this to a switch statement?*/
-        /*if((token[0] != '#') && (!isalpha(token[0])))
-        {
-            flag = illegalOperand;
-        }*/
+        
         flag = getOperandType(token);
         switch(flag) {
-            case isConstant:
-                break;
-            case isLabel:
-                break;
-            case isArray:
-                break;
-            case isRegister:
-                break;
-            default:
-                /*error handling*/
-                break;
-            
-        }
-        if(token[0] == '#') /* it is possibly an immediate operand */
-        {
-            wholeNum num = string_to_int(++token);
-            
-            if(num.isNum)
-            {
-                operandCounter++;
-                if(operandCounter == 1)
+            case isConstant:{
+                wholeNum num = string_to_int(++token);
+                int i;
+                if(num.isNum)
                 {
+                    operandCounter++;
+                    if(operandCounter == 1)
+                    {
                     field1->symbol = NULL;
                     field1->type = immediate;
                     field1->value = num.result;
@@ -291,28 +227,56 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
                     field2->value = num.result;
                 }
             }
-            else if(isLegalSymbol(token, True) == True) /*Wrong use of this function*/
+            else if((i = lookUpTable(&symbolHashTable, token)) != NOT_FOUND) /*Wrong use of this function*/
             {
+                Symbol *symb = symbolHashTable.items[i].item;
+                
                 operandCounter++;
                 if(operandCounter == 1)
                 {
                     field1->symbol = NULL;
                     field1->type = immediate;
-                    field1->value = &symbolHashTable.items[lookUpTable(&symbolHashTable, token)].item;
+                    field1->value = symb->value;
                 }
                 if(operandCounter == 2)
                 {
                     field2->symbol = NULL;
                     field2->type = immediate;
-                    field2->value = &symbolHashTable.items[lookUpTable(&symbolHashTable, token)].item;
+                    field2->value = symb->value;
                 }
             }
             else
             {
                 flag = illegalConstantOperand;
             }
+                break;
+            }
+                
+            case isLabel:
+                break;
+            case isArray:
+                break;
+            case isRegister:
+                break;
+            default:
+                /*error handling*/
+                break;
+            
         }
+        
 
         token = strtok(NULL, delimiter);
     }
+}
+
+OperandsFlags getOperandType(char *token) {
+    /*if((token[0] != '#') && (!isalpha(token[0])))
+        {
+            flag = illegalOperand;
+        }*/
+/* it is possibly an immediate operand */
+        /*if(token[0] == '#') 
+        {
+            
+        }*/
 }

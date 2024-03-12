@@ -1,4 +1,7 @@
-
+typedef struct {
+    Bool isNum; /*Change to Bool?*/
+    int result;
+} wholeNum;
 /*Finds a string in a string array*/
 int findInStringArray(char*, char**, int);
 
@@ -13,3 +16,5 @@ Bool isPreservedWord(char*);
 
 /*Counts words in a line*/
 int countWordsInLine(char*);
+
+wholeNum string_to_int(const char *);
