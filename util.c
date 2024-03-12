@@ -224,7 +224,7 @@ wholeNum string_to_int(const char *str)
 Bool isLegalArray(const char *str)
 {
     Bool flag = True;
-    char *left = NULL, *right = NULL, *temp = NULL;
+    char *left = NULL, *right = NULL, temp[MAX_LABEL_SIZE];
     int i, size = strlen(str);
     if(str == NULL || str[0] == '\0')
         flag = False;
@@ -257,6 +257,7 @@ Bool isLegalArray(const char *str)
                 left++;
                 if(left == right) /* empty brackets ('[]') */
                     flag = False;
+
                 else
                 {
                     size = strlen(left);
