@@ -258,6 +258,7 @@ Bool isLegalArray(const char *str)
                 left++;
                 if(left == right) /* empty brackets ('[]') */
                     flag = False;
+
                 else
                 {
                     size = strlen(left);
