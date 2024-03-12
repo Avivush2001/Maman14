@@ -48,6 +48,24 @@ isOperation
 entryDefinition
 externDefinition
 constantDefinition
+
+The function is a bit of black magic to be honest working so well after a first try.
+I tried to touch it and change some of the 'if' statement to a switch-case.
+It didn't work well as while the function outputted the correct flags
+and initialized the Labels, but for some reason it gave them some garbage values
+and flag, so now I am afraid to touch it.
+
+Yet I will try to document it as best to my abilities.
+
+The function is a bit like the pre assembler's line context function, in  that
+that it uses the first two strings in the line to return a flag on how
+the first stage function should continue. (there is also a 3rd string, incase
+there is a label before an instruction where it shouldn't be)
+
+It gets the a pointer to the line and to an integer to possibly store 
+the opcode of the operation in the line.
+
+It 
 */
 StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
     int i, stringsCounter;
@@ -227,7 +245,7 @@ StageOneFlags defineConstant(char *line) {
     wholeNum value = {False, 0};
     *str1 = *str2 = *str3 = *garbage ='\0';
     sscanf(p, "%31s %31s %31s %1s", str1, str2, str3, garbage);
-    if (*str3 == '\0' && strcmp(str1 ,"=") && *str2=='\0' && *garbage != '\0') {
+    if (*str3 == '\0' || strcmp(str2 ,"=") || *garbage != '\0') {
         flag = errorDefiningConstant;
     } else {
         value = string_to_int(str3);
