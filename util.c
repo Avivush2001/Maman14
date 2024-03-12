@@ -249,7 +249,6 @@ Bool isLegalArray(const char *str)
         {
             i = size - strlen(left);
             strncpy(temp, str, i);
-            printf("%s %s\n", str, temp);
             if(isLabelLegal(temp) == False)
                 flag = False;
             
@@ -265,7 +264,6 @@ Bool isLegalArray(const char *str)
                     i = size - strlen(right);
                     strncpy(temp, left, i);
                     temp[i] = '\0';
-                    printf("%s %s\n", str, temp);
                     if(isLabelLegal(temp) == False && string_to_int(temp).isNum == False)
                         flag = False;
                 }
