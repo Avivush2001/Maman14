@@ -293,20 +293,19 @@ void printSymbols() {
 OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
 {
     
-    OperandsFlags flag;
+    OperandsFlags flag = legalOperands;
     char *token;
     const char *delimiter = " , \n";
-    int operandCounter = 0;
+    int i, operandCounter = 0;
     token = strtok(str, delimiter);
     while(token != NULL && operandCounter <= 2)
     {
-        
         flag = getOperandType(token);
-        switch(flag) {
+        switch(flag) 
+        {
             case isConstant:
             {
                 wholeNum num = string_to_int(++token);
-                int i;
                 if(num.isNum)
                 {
                     operandCounter++;
@@ -351,20 +350,136 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
             }
                 
             case isLabel:
+            {
+                operandCounter++;
+                if((i = lookUpTable(&symbolHashTable, token)) == NOT_FOUND)
+                {
+                    insertToTable(&symbolHashTable, token);
+                    if(operandCounter == 1)
+                    {
+                        field1->symbol = token;
+                        field1->type = direct;
+                        field1->value = 0;
+                    }
+                    if(operandCounter == 2)
+                    {
+                        field2->symbol = token;
+                        field2->type = direct;
+                        field2->value = 0;
+                    }
+                }
+                else
+                {
+                    Symbol *symb = symbolHashTable.items[i].item;
+                    if(operandCounter == 1)
+                    {
+                        field1->symbol = token;
+                        field1->type = direct;
+                        field1->value = symb->value;
+                    }
+                    if(operandCounter == 2)
+                    {
+                        field2->symbol = token;
+                        field2->type = direct;
+                        field2->value = symb->value;
+                    }
+                }
                 break;
+            }
             case isArray:
-                break;
-            case isRegister:
-                break;
-            default:
-                /*error handling*/
-                break;
-            
-        }
-        
+            {
+                char *left = NULL, *right = NULL, label[MAX_LABEL_SIZE], brc[MAX_LABEL_SIZE];
+                int j, size = strlen(token);
+                wholeNum num;
+                left = strchr(str, '[');
+                right = strchr(str, ']');
+                j = size - strlen(left);
+                strncpy(label, token, j);
+                label[j] = '\0';
+                left++;
+                size = strlen(left);
+                j = size - strlen(right);
+                strncpy(brc, left, j);
+                brc[j] = '\0';
+                num = string_to_int(brc);
+                i = lookUpTable(&symbolHashTable, label);
+                if(num.isNum == True)
+                    {
+                        if(i == NOT_FOUND)
+                            insertToTable(&symbolHashTable, label);
 
+                        operandCounter++;
+                        if(operandCounter == 1)
+                        {
+                            field1->symbol = label;
+                            field1->type = index;
+                            field1->value = num.result;
+                        }
+                        if(operandCounter == 2)
+                        {
+                            field2->symbol = label;
+                            field2->type = index;
+                            field2->value = num.result;
+                        }  
+                    }
+                else
+                    {
+                        if((j = lookUpTable(&symbolHashTable, brc)) != NOT_FOUND)
+                        {
+                            Symbol *symb = symbolHashTable.items[j].item;
+                            if(symb->attr == constant)
+                            {
+                                if(i == NOT_FOUND)
+                                    insertToTable(&symbolHashTable, label);
+
+                                operandCounter++;
+                                if(operandCounter == 1)
+                                {
+                                    field1->symbol = label;
+                                    field1->type = index;
+                                    field1->value = symb->value;
+                                }
+                                if(operandCounter == 2)
+                                {
+                                    field2->symbol = label;
+                                    field2->type = index;
+                                    field2->value = symb->value;
+                                }  
+                            }
+                            else
+                                flag = illegalConstantOperand;
+                        }
+                        else
+                            flag = illegalConstantOperand;
+                    }
+                break;
+            }
+            case isRegister:
+            {
+                int r = findInStringArray(token, registersArr, 8);
+                operandCounter++;
+                if(operandCounter == 1)
+                {
+                    field1->symbol = NULL;
+                    field1->type = reg;
+                    field1->value = r;
+                }
+                if(operandCounter == 2)
+                {
+                    field2->symbol = NULL;
+                    field2->type = reg;
+                    field2->value = r;
+                }  
+                break;
+            }
+
+            default:
+                flag = illegalOperand;
+                break;    
+        }
         token = strtok(NULL, delimiter);
     }
+    return flag;
 }
 
 OperandsFlags getOperandType(char *token) 
@@ -381,6 +496,6 @@ OperandsFlags getOperandType(char *token)
 
     else if(findInStringArray(token, registersArr, 8) != -1)
         flag = isRegister;
-        
+
     return flag;
 }

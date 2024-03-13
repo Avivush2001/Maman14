@@ -1,7 +1,8 @@
 typedef struct {
-    Bool isNum; /*Change to Bool?*/
+    Bool isNum; 
     int result;
 } wholeNum;
+
 /*Finds a string in a string array*/
 int findInStringArray(char*, char**, int);
 

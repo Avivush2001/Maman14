@@ -234,8 +234,8 @@ Bool isLegalArray(const char *str)
     
     else
     {
-        left = strpbrk(str, "[");
-        right = strpbrk(str, "]");
+        left = strchr(str, '[');
+        right = strchr(str, ']');
         if(left == NULL || right == NULL) /* There are no brackets in the string so definitely not array */
             flag = False;
         
@@ -249,6 +249,7 @@ Bool isLegalArray(const char *str)
         {
             i = size - strlen(left);
             strncpy(temp, str, i);
+            temp[i] = '\0';
             if(isLabelLegal(temp) == False)
                 flag = False;
             
