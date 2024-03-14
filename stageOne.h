@@ -51,7 +51,8 @@ typedef enum {
     isRegister,
     illegalOperand,
     illegalConstantOperand,
-    legalOperands
+    legalOperands,
+    tooManyOperands
 } OperandsFlags;
 
 StageOneFlags stageOne(FILE *, char *);

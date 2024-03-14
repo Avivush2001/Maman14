@@ -1,8 +1,8 @@
-.define sz = 2345
+.define sz = 2000
 MAIN:   mov r3, LIST[sz] 
 LOOP:   jmp  L1 
 .entry END END1 END2 END4
-M: .extern HELLO HELLO1 HELLO3
+.extern HELLO HELLO1 HELLO3
 mcr  mmcr  
     cmp r3, #sz 
     bne END 

@@ -12,9 +12,11 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
     int lineCounter = 1, possibleOpCode;
     Symbol *symb;
     StageOneFlags contextFlag, errorFlagSO; 
+    
     DEFAULT_CONTEXT_SO
     errorFlagSO = allclearSO;
     while(fgets(line, MAX_LINE_LENGTH, fp) != NULL && errorFlagSO != errorEncounteredSO) {
+        Field field1 = {immediate,NULL,0 }, field2 = {immediate,NULL,0 };
         possibleOpCode = NOT_FOUND;
         contextFlag = lineContextSO(line, &possibleOpCode);
         printf("line %d, flag: %d, opcode: %d\n", lineCounter, contextFlag, possibleOpCode);
@@ -30,6 +32,9 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
             case constantDefinition:
                 contextFlag = defineConstant(line);
                 printf("%d\n", contextFlag);
+                break;
+            case isOperation:
+                areLegalOperands(strstr(line, operationsArr[possibleOpCode].name)+3, &field1, &field2);
                 break;
             default:
                 break;
@@ -298,9 +303,10 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
     const char *delimiter = " , \n";
     int i, operandCounter = 0;
     token = strtok(str, delimiter);
-    while(token != NULL && operandCounter <= 2)
+    while(token != NULL && operandCounter < 2 && flag == legalOperands)
     {
         flag = getOperandType(token);
+        printf("%s %d\n", token, flag);
         switch(flag) 
         {
             case isConstant:
@@ -350,7 +356,7 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
             }
                 
             case isLabel:
-            {
+            { /*DON'T LOOK IN THE TABLE just check if it is legal*/
                 operandCounter++;
                 if((i = lookUpTable(&symbolHashTable, token)) == NOT_FOUND)
                 {
@@ -479,6 +485,9 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
         }
         token = strtok(NULL, delimiter);
     }
+    printf("field1: %p %d %d\n",field1->symbol, field1->type, field1->value);
+    printf("field2: %p %d %d\n",field2->symbol, field2->type, field2->value);
+    if (token != NULL) flag = tooManyOperands;
     return flag;
 }
 
