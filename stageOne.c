@@ -250,7 +250,7 @@ StageOneFlags defineConstant(char *line) {
     wholeNum value = {False, 0};
     *str1 = *str2 = *str3 = *garbage ='\0';
     sscanf(p, "%31s %31s %31s %1s", str1, str2, str3, garbage);
-    if (*str3 == '\0' || strcmp(str2 ,"=") || *garbage != '\0') {
+    if (*str3 == '\0' || *str2 == '=' || *garbage != '\0') {
         flag = errorDefiningConstant;
     } else {
         value = string_to_int(str3);
