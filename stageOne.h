@@ -20,7 +20,7 @@
                 contextFlag = errorIllegalKeyWord;\
                 break;\
         }
-#define IN_CONST_RANGE(_val) (_val <= MAX_CONST && _val >=MIN_CONST)
+#define IN_CONST_RANGE(_val) (_val <= MAX_CONST && _val >= MIN_CONST)
 #define IN_DATA_RANGE(_val) (_val <= MAX_DATA && _val >=MIN_DATA)
 
 typedef enum {
@@ -49,10 +49,13 @@ typedef enum {
     isLabel,
     isArray,
     isRegister,
+    legal1Operand,
+    legal2Operands,
     illegalOperand,
     illegalConstantOperand,
-    legalOperands,
-    tooManyOperands
+    tooManyOperands,
+    noOperands,
+    failedCalloc
 } OperandsFlags;
 
 StageOneFlags stageOne(FILE *, char *);
