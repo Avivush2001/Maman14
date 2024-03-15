@@ -39,14 +39,17 @@ If not found 'index' will stay 'NOT_FOUND'.
 int lookUpTable(HashTable *table, char *name) {
     int hash, i, key, in;
     in = NOT_FOUND;
-    key = generateKey(name);
-    ITERATE_HASHES {
+    if(name != NULL) {
+        key = generateKey(name);
+        ITERATE_HASHES {
         hash = generateHash(key, i);
-        if(!strcmp(TABLE_NAME_AT(hash), name)) {
-            in = hash;
-            break;
+            if(!strcmp(TABLE_NAME_AT(hash), name)) {
+                in = hash;
+                break;
+            }
         }
     }
+    
     
     
     return in;

@@ -34,7 +34,7 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
                 printf("%d\n", contextFlag);
                 break;
             case isOperation:
-                /*areLegalOperands(strstr(line, operationsArr[possibleOpCode].name)+3, &field1, &field2); TEST*/
+                areLegalOperands(strstr(line, operationsArr[possibleOpCode].name)+3, &field1, &field2);
                 break;
             default:
                 break;
@@ -396,14 +396,15 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
                 char *left = NULL, *right = NULL, label[MAX_LABEL_SIZE], brc[MAX_LABEL_SIZE], *p;
                 int i, size = strlen(token);
                 wholeNum num;
-                left = strchr(str, '[');
-                right = strchr(str, ']');
+                left = strchr(token, '[');
+                right = strchr(token, ']');
                 i = size - strlen(left);
                 strncpy(label, token, i);
                 label[i] = '\0';
                 p = (char *) (calloc(strlen(label), sizeof(char)));
                 if(p != NULL)
                 {
+                    strcpy(p,label);
                     left++;
                     size = strlen(left);
                     i = size - strlen(right);
@@ -486,8 +487,8 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
         }
         token = strtok(NULL, delimiter);
     }
-    printf("field1: %p %d %d\n",field1->symbol, field1->type, field1->value);
-    printf("field2: %p %d %d\n",field2->symbol, field2->type, field2->value);
+    printf("field1: %s %d %d\n",field1->symbol, field1->type, field1->value);
+    printf("field2: %s %d %d\n",field2->symbol, field2->type, field2->value);
     if (token != NULL && operandCounter == 2)
         flag = tooManyOperands;
     return flag;
