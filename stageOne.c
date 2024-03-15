@@ -598,7 +598,7 @@ StringFlags insertStringToMemory(const char *str)
                 else
                     flag = illegalString;
             }
-            if(flag == legalString)
+            if(flag == legalString) /* If we reached the end of the string and it's legal up to this point add null terminator in the end */
             {
                 data.value = 0;
                 memFlag = insertDataWord(&data);
