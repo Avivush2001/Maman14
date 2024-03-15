@@ -574,14 +574,14 @@ StringFlags insertStringToMemory(const char *str)
         {
             while(p < left && flag == legalString)
             {
-                if(isgraph(p) != 0)
+                if(isgraph(*p) != 0)
                     flag = illegalString; /* left " has to be the first char of the string */
                 p++;
             }
             p = right + 1;
             while(*p != '\0' && flag == legalString)
             {
-                if(isgraph(p) != 0)
+                if(isgraph(*p) != 0)
                     flag = illegalString; /* right " has to be the last char of the string */
                 p++;
             }
