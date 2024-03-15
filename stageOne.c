@@ -588,7 +588,7 @@ StringFlags insertStringToMemory(const char *str)
             left++; /* Now left is the first char of the string */
             while(left < right && flag == legalString)
             {
-                if(isgraph(left) != 0)
+                if(isgraph(*left) != 0)
                 {
                     data.value = (int) (*left);
                     memFlag = insertDataWord(&data);
