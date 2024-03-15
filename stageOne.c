@@ -516,8 +516,12 @@ OperandsFlags getOperandType(char *token)
     return flag;
 }
 
-Bool insertStringToMemory(char *str)
+StringFlags insertStringToMemory(char *str)
 {
-    MemoryFlags flag;
+    MemoryFlags flag = legalString;
+    char *left, *right;
+    if(str == NULL || *str == '\0')
+        flag = illegalString;
+    left = strchr(str, '"');
     
 }

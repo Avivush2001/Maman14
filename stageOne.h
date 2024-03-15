@@ -58,6 +58,11 @@ typedef enum {
     failedCalloc
 } OperandsFlags;
 
+typedef enum {
+    illegalString,
+    legalString
+} StringFlags;
+
 StageOneFlags stageOne(FILE *, char *);
 StageOneFlags lineContextSO(char *, int *);
 Bool isLegalSymbol(char *, Bool);
