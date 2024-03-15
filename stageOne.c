@@ -12,12 +12,15 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
     int lineCounter = 1, possibleOpCode;
     Symbol *symb;
     StageOneFlags contextFlag, errorFlagSO; 
-    
+    OperandsFlags opFlag;
+    MemoryFlags memFlag;
     DEFAULT_CONTEXT_SO
     errorFlagSO = allclearSO;
     while(fgets(line, MAX_LINE_LENGTH, fp) != NULL && errorFlagSO != errorEncounteredSO) {
         Field field1 = {immediate,NULL,0 }, field2 = {immediate,NULL,0 };
         possibleOpCode = NOT_FOUND;
+        opFlag = notReadOperands;
+        memFlag = memoryAvailable;
         contextFlag = lineContextSO(line, &possibleOpCode);
         printf("line %d, flag: %d, opcode: %d\n", lineCounter, contextFlag, possibleOpCode);
         switch(contextFlag) {
@@ -34,15 +37,50 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
                 printf("%d\n", contextFlag);
                 break;
             case isOperation:
-                areLegalOperands(strstr(line, operationsArr[possibleOpCode].name)+3, &field1, &field2);
+                opFlag = areLegalOperands(strstr(line, operationsArr[possibleOpCode].name)+3, &field1, &field2);
+                switch (opFlag) {
+                    case noOperands:
+                        if (operationsArr[possibleOpCode].fields == 0) {
+                            memFlag = insertOperation(possibleOpCode, NULL, NULL);
+                        } else {
+                            contextFlag = errorOperandTypes;
+                        }
+                        break;
+                    case legal1Operand:
+                        if (operationsArr[possibleOpCode].fields == 1 && operationsArr[possibleOpCode].allowedDst[field1.type]) {
+                            memFlag = insertOperation(possibleOpCode, NULL, &field1);
+                        } else {
+                            contextFlag = errorOperandTypes;
+                        }
+                        break;
+                    case legal2Operands:
+                        if (operationsArr[possibleOpCode].fields == 2 && operationsArr[possibleOpCode].allowedSrc[field1.type] && operationsArr[possibleOpCode].allowedDst[field2.type]) {
+                            memFlag = insertOperation(possibleOpCode, &field1, &field2);
+                        } else {
+                            contextFlag = errorOperandTypes;
+                        }
+                        break;
+                    default:
+                        break;
+                    
+                }
+                break;
+            case isData:
+                contextFlag = insertData(line); 
+                break;
+            case isString: 
                 break;
             default:
                 break;
         }
+        /*TODO write an error handling function for operands and use here*/
+        /*It should get all the flags in this function*/
         lineCounter++;
     }
+    addDataToMemory();
     printSymbols();
     freeSymbols();
+    freeMemory();
 }
 
 /*Return flags besides errors:
@@ -295,6 +333,8 @@ void printSymbols() {
     
 }
 
+
+
 OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
 {
     
@@ -524,4 +564,40 @@ StringFlags insertStringToMemory(char *str)
         flag = illegalString;
     left = strchr(str, '"');
     
+}
+
+StageOneFlags insertData(char *line) {
+    const char *delimiter = " , \n";
+    char *p = strchr(line,'.') + 5, *token;
+    Bool flagNoComma = False;
+    StageOneFlags flag = allclearSO;
+    MemoryFlags memFlag;
+    int i = 0;
+    if (strchr(line, ',') == NULL) {
+        flagNoComma = True;
+    } else if(!isgraph(strchr(line, ',')-1)) {
+        flag = errorEnteringData;
+    }
+
+    token = strtok(p, delimiter);
+    while (token != NULL && flag != errorEnteringData) {
+        if ((i++) == 1 && flagNoComma) 
+            flag = errorEnteringData;
+        else {
+            wholeNum number = string_to_int(token);
+            Data data = {0};
+            if (number.isNum && IN_DATA_RANGE(number.result)) {
+                data.value = number.result;
+                memFlag = insertDataWord(&data);
+            } else 
+                flag = errorEnteringData;
+            
+            if (memFlag == memoryFull) {
+                flag = errorMemoryFull;
+                break;
+            }
+        }
+        token = strtok(NULL, delimiter);
+    }
+    return flag;
 }

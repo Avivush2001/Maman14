@@ -100,3 +100,5 @@ void insertIntoBinaryWord(BinaryWord *, unsigned, int, int);
 Checks if we have enough memory to perform an operation insertion.
 */
 MemoryFlags getInsertionFlag(Field *, Field *);
+
+void printMemory();

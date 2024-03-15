@@ -41,6 +41,9 @@ typedef enum {
     errorDefiningLabel,
     errorDefiningConstant,
     errorIllegalSymbolOrTableFull,
+    errorEnteringData,
+    errorMemoryFull,
+    errorOperandTypes,
     allclearSO
 } StageOneFlags;
 
@@ -55,7 +58,8 @@ typedef enum {
     illegalConstantOperand,
     tooManyOperands,
     noOperands,
-    failedCalloc
+    failedCalloc,
+    notReadOperands
 } OperandsFlags;
 
 typedef enum {
@@ -71,5 +75,6 @@ StageOneFlags defineExternOrEntryLabels(char *, Bool);
 StageOneFlags defineConstant(char *);
 OperandsFlags areLegalOperands(char *, Field *, Field *);
 OperandsFlags getOperandType(char *);
+StageOneFlags insertData(char *);
 void freeSymbols();
 void printSymbols();

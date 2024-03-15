@@ -245,3 +245,14 @@ MemoryFlags getInsertionFlag(Field *field1, Field *field2) {
     if (memoryNeeded > availableMemory) status = memoryFull;
     return status;
 }
+/*
+DEBUGGING FUNCTION
+*/
+void printMemory() {
+    int i;
+    BinaryWord *p = memoryHead;
+    while (p != NULL) {
+        printf("%s %s\n", p->bits, p->possibleLabel);
+        p = p->nextWord;
+    }
+}
