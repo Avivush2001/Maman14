@@ -606,8 +606,8 @@ StringFlags insertStringToMemory(const char *str)
                     flag = error;
             }
         }
-        return flag;
     }
+    return flag;
 }
 
 StageOneFlags insertData(char *line) {
