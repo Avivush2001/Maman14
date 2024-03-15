@@ -515,3 +515,9 @@ OperandsFlags getOperandType(char *token)
 
     return flag;
 }
+
+Bool insertStringToMemory(char *str)
+{
+    MemoryFlags flag;
+    
+}
