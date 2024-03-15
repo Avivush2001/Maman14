@@ -57,7 +57,9 @@ MemoryFlags insertDataWord(Data *dataStruc) {
     dataWordd = malloc(sizeof(BinaryWord));
     CHECK_MEMORY_ALLOC_ERROR(dataWordd, dataFlag);
     if (dataFlag == memoryAvailable) {
+        dataWordd->bits[WORD_LENGTH] = '\0';
         insertIntoBinaryWord(dataWordd, dataStruc->value, 0, 14);
+        printf("%s\n", dataWordd->bits);
         if (headData == NULL){
             headData = dataWordd;
         } else tailData->nextWord = dataWordd;
@@ -92,7 +94,23 @@ MemoryFlags insertOperation(int opcode, Field *field1, Field *field2) {
         /*In case field1 is NULL the function handles this as an operation just one field.*/
         else if (field1 == NULL) {
             insertionFlag = insertOpBin(opcode,0,TYPE_OF_FIELD_2);
-            INSERT_FIELD(field2)
+            switch (field2->type) {
+                case immediate:
+                    insertionFlag = insertConstBin(field2->value);\
+                    break;
+                case direct:
+                    insertionFlag = insertAddressBin(field2->symbol);\
+                    break;
+                case index:
+                    insertionFlag = insertAddressBin(field2->symbol);\
+                    insertionFlag = insertConstBin(field2->value);\
+                    break;
+                case reg:
+                    insertionFlag = insertRegisterBin(field2->value,0);\
+                    break;
+                default:
+                    break;
+            }
         }
 
         /*None is NULL*/
@@ -103,8 +121,24 @@ MemoryFlags insertOperation(int opcode, Field *field1, Field *field2) {
             if ((TYPE_OF_FIELD_1 == reg) && (TYPE_OF_FIELD_2 == reg)) 
                 insertionFlag = insertRegisterBin(field1->value,field2->value);
             else {
-                INSERT_FIELD(field1)
-                INSERT_FIELD(field2)
+                INSERT_FIELD1
+                switch (field2->type) {
+                case immediate:
+                    insertionFlag = insertConstBin(field2->value);\
+                    break;
+                case direct:
+                    insertionFlag = insertAddressBin(field2->symbol);\
+                    break;
+                case index:
+                    insertionFlag = insertAddressBin(field2->symbol);\
+                    insertionFlag = insertConstBin(field2->value);\
+                    break;
+                case reg:
+                    insertionFlag = insertRegisterBin(0,field2->value);\
+                    break;
+                default:
+                    break;
+            }
             }
         }      
     }
@@ -129,8 +163,8 @@ MemoryFlags insertOpBin(int opcode, int src, int dst) {
         insertIntoBinaryWord(newBinaryWord, immediate, 12, 2);
         newBinaryWord->possibleLabel = NULL;
         newBinaryWord->nextWord = NULL;
-        if (headData == NULL){
-            headData = newBinaryWord;
+        if (memoryHead == NULL){
+            memoryHead = newBinaryWord;
         } else memoryTail->nextWord = newBinaryWord;
         memoryTail = newBinaryWord;
         IC++;
@@ -142,7 +176,7 @@ MemoryFlags insertOpBin(int opcode, int src, int dst) {
 
 MemoryFlags insertConstBin(unsigned co) {
     INIT_BINARY_INSERTION
-    if (insertionFlag = memoryAvailable) {
+    if (insertionFlag == memoryAvailable) {
         newBinaryWord->bits[WORD_LENGTH] = '\0';
         insertIntoBinaryWord(newBinaryWord, co, 0, 12);
         insertIntoBinaryWord(newBinaryWord, immediate, 12, 2);
@@ -156,7 +190,7 @@ MemoryFlags insertConstBin(unsigned co) {
 
 MemoryFlags insertAddressBin(char *symbol) {
     INIT_BINARY_INSERTION
-    if (insertionFlag = memoryAvailable) {
+    if (insertionFlag == memoryAvailable) {
         newBinaryWord->bits[WORD_LENGTH] = '\0';
         insertIntoBinaryWord(newBinaryWord, 0, 0, 12);
         insertIntoBinaryWord(newBinaryWord, index, 12, 2);
@@ -170,7 +204,7 @@ MemoryFlags insertAddressBin(char *symbol) {
 
 MemoryFlags insertRegisterBin(int reg1, int reg2) {
     INIT_BINARY_INSERTION
-    if (insertionFlag = memoryAvailable) {
+    if (insertionFlag == memoryAvailable) {
         newBinaryWord->bits[WORD_LENGTH] = '\0';
         insertIntoBinaryWord(newBinaryWord, 0, 0, 6);
         insertIntoBinaryWord(newBinaryWord, reg1, 6, 3);
@@ -208,7 +242,8 @@ which is -7 in two's compliment with 4 bit.
 void insertIntoBinaryWord(BinaryWord *newBinaryWord, unsigned data, int in, int bits) {
     int i, power;
     for (i = 0; i < bits; i++) {
-        if ((data-(power = pow(2,bits - i - 1))) >= 0) {
+        power = pow(2,bits - i - 1);
+        if ((int)(data-power) >= 0) {
             data -= power;
             newBinaryWord->bits[i+in] = '1';
         } else newBinaryWord->bits[i+in] = '0';
@@ -249,10 +284,10 @@ MemoryFlags getInsertionFlag(Field *field1, Field *field2) {
 DEBUGGING FUNCTION
 */
 void printMemory() {
-    int i;
+    int i = 100;
     BinaryWord *p = memoryHead;
     while (p != NULL) {
-        printf("%s %s\n", p->bits, p->possibleLabel);
+        printf("%d %s %s\n",i++, p->bits, p->possibleLabel);
         p = p->nextWord;
     }
 }

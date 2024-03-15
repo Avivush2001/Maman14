@@ -14,14 +14,14 @@ int main() {
     PreassemblerFlags flagPA;
     initializeHashTable(&macroHashTable);
     initializeHashTable(&symbolHashTable);
-    fp = fopen("test1PA.as", "r");
-    flagPA = preassembler(fp, "test1PA.am");
+    fp = fopen("testOriginal.as", "r");
+    flagPA = preassembler(fp, "testOriginal.am");
     if (flagPA == errorEncounteredPA) {
-        remove("test1PA.am");
+        remove("testOriginal.am");
     }
     fclose(fp);
-    fp = fopen("test1PA.am", "r");
-    stageOne(fp, "test1PA");
+    fp = fopen("testOriginal.am", "r");
+    stageOne(fp, "testOriginal");
     fclose(fp);
     freeTableNames(&macroHashTable);
     freeTableNames(&symbolHashTable);

@@ -44,6 +44,8 @@ typedef enum {
     errorEnteringData,
     errorMemoryFull,
     errorOperandTypes,
+    illegalString,
+    legalString, 
     allclearSO
 } StageOneFlags;
 
@@ -62,11 +64,7 @@ typedef enum {
     notReadOperands
 } OperandsFlags;
 
-typedef enum {
-    illegalString,
-    legalString, 
-    error
-} StringFlags;
+
 
 StageOneFlags stageOne(FILE *, char *);
 StageOneFlags lineContextSO(char *, int *);
@@ -76,6 +74,7 @@ StageOneFlags defineExternOrEntryLabels(char *, Bool);
 StageOneFlags defineConstant(char *);
 OperandsFlags areLegalOperands(char *, Field *, Field *);
 OperandsFlags getOperandType(char *);
+StageOneFlags insertStringToMemory(const char *);
 StageOneFlags insertData(char *);
 void freeSymbols();
 void printSymbols();

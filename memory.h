@@ -4,19 +4,19 @@ _flag = memoryAllocationError;
 else _flag = memoryAvailable;
 #define TYPE_OF_FIELD_1 field1->type
 #define TYPE_OF_FIELD_2 field2->type
-#define INSERT_FIELD(_field) switch (_field->type) {\
+#define INSERT_FIELD1 switch (field1->type) {\
                 case immediate:\
-                    insertionFlag = insertConstBin(_field->value);\
+                    insertionFlag = insertConstBin(field1->value);\
                     break;\
                 case direct:\
-                    insertionFlag = insertAddressBin(_field->symbol);\
+                    insertionFlag = insertAddressBin(field1->symbol);\
                     break;\
                 case index:\
-                    insertionFlag = insertAddressBin(_field->symbol);\
-                    insertionFlag = insertConstBin(_field->value);\
+                    insertionFlag = insertAddressBin(field1->symbol);\
+                    insertionFlag = insertConstBin(field1->value);\
                     break;\
                 case reg:\
-                    insertionFlag = insertRegisterBin(0,_field->value);\
+                    insertionFlag = insertRegisterBin(field1->value,0);\
                     break;\
                 default:\
                     break;\

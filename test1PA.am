@@ -16,7 +16,7 @@ END:    hlt
     bne END 
     cmp r3, #sz 
     bne END 
-STR:    .string  “abcdef” 
-LIST:   .data 6, -9, len 
+STR:    .string  "abcd" 
+LIST:   .data 6, -9, 5 
 K:  .data 22
 ;no problem is encountered

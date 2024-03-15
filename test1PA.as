@@ -21,7 +21,7 @@ END:    hlt
 .define len = 4
 mmcr
 mmcr2
-STR:    .string  “abcdef” 
-LIST:   .data 6, -9, len 
+STR:    .string  "abcd" 
+LIST:   .data 6, -9, 5 
 K:  .data 22
 ;no problem is encountered

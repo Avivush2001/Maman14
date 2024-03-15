@@ -14,6 +14,7 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
     StageOneFlags contextFlag, errorFlagSO; 
     OperandsFlags opFlag;
     MemoryFlags memFlag;
+    initializeMemory();
     DEFAULT_CONTEXT_SO
     errorFlagSO = allclearSO;
     while(fgets(line, MAX_LINE_LENGTH, fp) != NULL && errorFlagSO != errorEncounteredSO) {
@@ -26,15 +27,12 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
         switch(contextFlag) {
             case entryDefinition:
                 contextFlag = defineExternOrEntryLabels(line,True);
-                printf("%d\n", contextFlag);
                 break;
             case externDefinition:
                 contextFlag = defineExternOrEntryLabels(line,False);
-                printf("%d\n", contextFlag);
                 break;
             case constantDefinition:
                 contextFlag = defineConstant(line);
-                printf("%d\n", contextFlag);
                 break;
             case isOperation:
                 opFlag = areLegalOperands(strstr(line, operationsArr[possibleOpCode].name)+3, &field1, &field2);
@@ -69,16 +67,19 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
                 contextFlag = insertData(line); 
                 break;
             case isString: 
+                contextFlag = insertStringToMemory(line);
                 break;
             default:
                 break;
         }
+        printf("%d \n", memFlag);
         /*TODO write an error handling function for operands and use here*/
         /*It should get all the flags in this function*/
         lineCounter++;
     }
     addDataToMemory();
     printSymbols();
+    printMemory();
     freeSymbols();
     freeMemory();
 }
@@ -556,12 +557,12 @@ OperandsFlags getOperandType(char *token)
     return flag;
 }
 
-StringFlags insertStringToMemory(const char *str)
+StageOneFlags insertStringToMemory(const char *str)
 {
-    StringFlags flag = legalString;
+    StageOneFlags flag = legalString;
     MemoryFlags memFlag;
     Data data = {0};
-    char *left, *right, *p = str;
+    char *left, *right, *p = strchr(str,'.') + 7;
     if(str == NULL || *str == '\0')
         flag = illegalString;
     else
@@ -574,26 +575,27 @@ StringFlags insertStringToMemory(const char *str)
         {
             while(p < left && flag == legalString)
             {
-                if(isgraph(p) != 0)
+                if(isgraph(*p) != 0)
                     flag = illegalString; /* left " has to be the first char of the string */
                 p++;
             }
             p = right + 1;
             while(*p != '\0' && flag == legalString)
             {
-                if(isgraph(p) != 0)
+                if(isgraph(*p) != 0)
                     flag = illegalString; /* right " has to be the last char of the string */
                 p++;
             }
             left++; /* Now left is the first char of the string */
             while(left < right && flag == legalString)
             {
-                if(isgraph(left) != 0)
+                if(isgraph(*left) != 0)
                 {
                     data.value = (int) (*left);
                     memFlag = insertDataWord(&data);
+                    left++;
                     if(memFlag != wordCreationSuccess)
-                        flag = error;
+                        flag = errorMemoryFull;
                 }
                 else
                     flag = illegalString;
@@ -603,12 +605,12 @@ StringFlags insertStringToMemory(const char *str)
                 data.value = 0;
                 memFlag = insertDataWord(&data);
                 if(memFlag != wordCreationSuccess)
-                    flag = error;
+                    flag = errorMemoryFull;
             }
         }
-        return flag;
+        
     }
-    
+    return flag;
     
     
 }
@@ -619,24 +621,39 @@ StageOneFlags insertData(char *line) {
     Bool flagNoComma = False;
     StageOneFlags flag = allclearSO;
     MemoryFlags memFlag;
-    int i = 0;
+    int i = 0, j;
     if (strchr(line, ',') == NULL) {
         flagNoComma = True;
-    } else if(!isgraph(strchr(line, ',')-1)) {
+    } /*else if(!isgraph(*(strchr(line, ',')-1))) {
         flag = errorEnteringData;
-    }
+    }*/
+    for(j = 0; j < strlen(p); j++) {
+        if (isgraph(*(p+j)) && *(p+j) != ',')
+            break;
+        if (*(p+j) == ',') {
+            flag = errorEnteringData;
+            break;
+        }
 
+    }
     token = strtok(p, delimiter);
     while (token != NULL && flag != errorEnteringData) {
         if ((i++) == 1 && flagNoComma) 
             flag = errorEnteringData;
         else {
-            wholeNum number = string_to_int(token);
+            wholeNum number;
             Data data = {0};
+            number = string_to_int(token);
             if (number.isNum && IN_DATA_RANGE(number.result)) {
                 data.value = number.result;
                 memFlag = insertDataWord(&data);
-            } else 
+            } else if((j = lookUpTable(&symbolHashTable, token)) != NOT_FOUND) {
+                Symbol *symb = symbolHashTable.items[j].item;
+                    if(symb->attr == constant) {
+                        data.value = symb->value;
+                        memFlag = insertDataWord(&data);
+                    } else flag = errorEnteringData;
+            } else
                 flag = errorEnteringData;
             
             if (memFlag == memoryFull) {
