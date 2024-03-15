@@ -91,7 +91,7 @@ MemoryFlags insertAddressBin(char *);
 MemoryFlags insertRegisterBin(int, int);
 
 /*
-The function gets the word, unsigned data, an index from which we will insert into the BinarY word,
+The function gets the word, unsigned data, an index from which we will insert into the Binary word,
 And the number of bits of the unsigned data's bit field.
 */
 void insertIntoBinaryWord(BinaryWord *, unsigned, int, int);

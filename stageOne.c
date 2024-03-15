@@ -426,8 +426,10 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
                     }
                 }
                 else
+                {
                     flag = failedCalloc;
-                
+                    exit(EXIT_FAILURE);
+                }
                 break;
             }
 
@@ -497,8 +499,10 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
                         flag = illegalConstantOperand;
                 }
                 else
+                {
                     flag = failedCalloc;
-
+                    exit(EXIT_FAILURE);
+                }
                 break;
             }
             case isRegister:
@@ -550,6 +554,12 @@ OperandsFlags getOperandType(char *token)
         flag = isRegister;
 
     return flag;
+}
+
+Bool insertStringToMemory(char *str)
+{
+    MemoryFlags flag;
+    
 }
 
 StageOneFlags insertData(char *line) {
