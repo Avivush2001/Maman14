@@ -298,12 +298,16 @@ void printSymbols() {
 OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
 {
     
-    OperandsFlags flag = legalOperands;
+    OperandsFlags flag = legal1Operand;
     char *token;
     const char *delimiter = " , \n";
     int i, operandCounter = 0;
     token = strtok(str, delimiter);
-    while(token != NULL && operandCounter < 2 && flag == legalOperands)
+
+    if(token == NULL)
+        flag = noOperands;
+        
+    while(token != NULL && operandCounter < 2 && flag == legal1Operand)
     {
         flag = getOperandType(token);
         printf("%s %d\n", token, flag);
@@ -312,7 +316,7 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
             case isConstant:
             {
                 wholeNum num = string_to_int(++token);
-                if(num.isNum)
+                if(num.isNum && IN_CONST_RANGE(num.result))
                 {
                     operandCounter++;
                     if(operandCounter == 1)
@@ -320,12 +324,14 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
                         field1->symbol = NULL;
                         field1->type = immediate;
                         field1->value = num.result;
+                        flag = legal1Operand;
                     }
                     if(operandCounter == 2)
                     {
                         field2->symbol = NULL;
                         field2->type = immediate;
                         field2->value = num.result;
+                        flag = legal2Operands;
                     }
                 }
                 else if((i = lookUpTable(&symbolHashTable, token)) != NOT_FOUND) 
@@ -339,12 +345,14 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
                             field1->symbol = NULL;
                             field1->type = immediate;
                             field1->value = symb->value;
+                            flag = legal1Operand;
                         }
                         if(operandCounter == 2)
                         {
                             field2->symbol = NULL;
                             field2->type = immediate;
                             field2->value = symb->value;
+                            flag = legal2Operands;
                         }
                     } 
                     else 
@@ -356,108 +364,100 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
             }
                 
             case isLabel:
-            { /*DON'T LOOK IN THE TABLE just check if it is legal*/
-                operandCounter++;
-                if((i = lookUpTable(&symbolHashTable, token)) == NOT_FOUND)
+            { 
+                char *p = (char *) (calloc(strlen(token), sizeof(char)));
+                if(p != NULL)
                 {
-                    insertToTable(&symbolHashTable, token);
+                    strcpy(p, token);
+                    operandCounter++;
                     if(operandCounter == 1)
                     {
-                        field1->symbol = token;
+                        field1->symbol = p;
                         field1->type = direct;
                         field1->value = 0;
+                        flag = legal1Operand;
                     }
                     if(operandCounter == 2)
                     {
-                        field2->symbol = token;
+                        field2->symbol = p;
                         field2->type = direct;
                         field2->value = 0;
+                        flag = legal2Operands;
                     }
                 }
                 else
-                {
-                    Symbol *symb = symbolHashTable.items[i].item;
-                    if(operandCounter == 1)
-                    {
-                        field1->symbol = token;
-                        field1->type = direct;
-                        field1->value = symb->value;
-                    }
-                    if(operandCounter == 2)
-                    {
-                        field2->symbol = token;
-                        field2->type = direct;
-                        field2->value = symb->value;
-                    }
-                }
+                    flag = failedCalloc;
+                
                 break;
             }
+
             case isArray:
             {
-                char *left = NULL, *right = NULL, label[MAX_LABEL_SIZE], brc[MAX_LABEL_SIZE];
-                int j, size = strlen(token);
+                char *left = NULL, *right = NULL, label[MAX_LABEL_SIZE], brc[MAX_LABEL_SIZE], *p;
+                int i, size = strlen(token);
                 wholeNum num;
                 left = strchr(str, '[');
                 right = strchr(str, ']');
-                j = size - strlen(left);
-                strncpy(label, token, j);
-                label[j] = '\0';
-                left++;
-                size = strlen(left);
-                j = size - strlen(right);
-                strncpy(brc, left, j);
-                brc[j] = '\0';
-                num = string_to_int(brc);
-                i = lookUpTable(&symbolHashTable, label);
-                if(num.isNum == True)
+                i = size - strlen(left);
+                strncpy(label, token, i);
+                label[i] = '\0';
+                p = (char *) (calloc(strlen(label), sizeof(char)));
+                if(p != NULL)
+                {
+                    left++;
+                    size = strlen(left);
+                    i = size - strlen(right);
+                    strncpy(brc, left, i);
+                    brc[i] = '\0';
+                    num = string_to_int(brc);
+                    if(num.isNum && IN_CONST_RANGE(num.result))
                     {
-                        if(i == NOT_FOUND)
-                            insertToTable(&symbolHashTable, label);
-
                         operandCounter++;
                         if(operandCounter == 1)
                         {
-                            field1->symbol = label;
+                            field1->symbol = p;
                             field1->type = index;
                             field1->value = num.result;
+                            flag = legal1Operand;
                         }
                         if(operandCounter == 2)
                         {
-                            field2->symbol = label;
+                            field2->symbol = p;
                             field2->type = index;
                             field2->value = num.result;
+                            flag = legal2Operands;
                         }  
                     }
-                else
+                    else if((i = lookUpTable(&symbolHashTable, brc)) != NOT_FOUND)
                     {
-                        if((j = lookUpTable(&symbolHashTable, brc)) != NOT_FOUND)
+                        Symbol *symb = symbolHashTable.items[i].item;
+                        if(symb->attr == constant)
                         {
-                            Symbol *symb = symbolHashTable.items[j].item;
-                            if(symb->attr == constant)
+                            operandCounter++;
+                            if(operandCounter == 1)
                             {
-                                if(i == NOT_FOUND)
-                                    insertToTable(&symbolHashTable, label);
-
-                                operandCounter++;
-                                if(operandCounter == 1)
-                                {
-                                    field1->symbol = label;
-                                    field1->type = index;
-                                    field1->value = symb->value;
-                                }
-                                if(operandCounter == 2)
-                                {
-                                    field2->symbol = label;
-                                    field2->type = index;
-                                    field2->value = symb->value;
-                                }  
+                                field1->symbol = p;
+                                field1->type = index;
+                                field1->value = symb->value;
+                                flag = legal1Operand;
                             }
-                            else
-                                flag = illegalConstantOperand;
+                            if(operandCounter == 2)
+                            {
+                                field2->symbol = p;
+                                field2->type = index;
+                                field2->value = symb->value;
+                                flag = legal2Operands;
+                            }  
                         }
                         else
                             flag = illegalConstantOperand;
                     }
+                    else
+                        flag = illegalConstantOperand;
+                }
+                else
+                    flag = failedCalloc;
+
                 break;
             }
             case isRegister:
@@ -469,16 +469,17 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
                     field1->symbol = NULL;
                     field1->type = reg;
                     field1->value = r;
+                    flag = legal1Operand;
                 }
                 if(operandCounter == 2)
                 {
                     field2->symbol = NULL;
                     field2->type = reg;
                     field2->value = r;
+                    flag = legal2Operands;
                 }  
                 break;
             }
-
             default:
                 flag = illegalOperand;
                 break;    
@@ -487,7 +488,8 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
     }
     printf("field1: %p %d %d\n",field1->symbol, field1->type, field1->value);
     printf("field2: %p %d %d\n",field2->symbol, field2->type, field2->value);
-    if (token != NULL) flag = tooManyOperands;
+    if (token != NULL && operandCounter == 2)
+        flag = tooManyOperands;
     return flag;
 }
 
