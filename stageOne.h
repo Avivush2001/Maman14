@@ -64,7 +64,8 @@ typedef enum {
 
 typedef enum {
     illegalString,
-    legalString
+    legalString, 
+    error
 } StringFlags;
 
 StageOneFlags stageOne(FILE *, char *);

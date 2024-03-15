@@ -556,13 +556,53 @@ OperandsFlags getOperandType(char *token)
     return flag;
 }
 
-StringFlags insertStringToMemory(char *str)
+StringFlags insertStringToMemory(const char *str)
 {
-    MemoryFlags flag = legalString;
-    char *left, *right;
+    StringFlags flag = legalString;
+    MemoryFlags memFlag;
+    char *left, *right, *p = str;
     if(str == NULL || *str == '\0')
         flag = illegalString;
-    left = strchr(str, '"');
+    else
+    {
+        left = strchr(str, '"');
+        right = strrchr(str, '"');
+        if(left == NULL || right == NULL || left == right || (left+1) == right) /* Not enough " (needs at least 2 different ones to contain the string) */
+            flag = illegalString;
+        else
+        {
+            while(p < left && flag == legalString)
+            {
+                if(isgraph(p) != 0)
+                    flag = illegalString; /* left " has to be the first char of the string */
+                p++;
+            }
+            p = right + 1;
+            while(*p != '\0' && flag == legalString)
+            {
+                if(isgraph(p) != 0)
+                    flag = illegalString; /* right " has to be the last char of the string */
+                p++;
+            }
+            left++; /* Now left is the first char of the string */
+            while(left < right && flag == legalString)
+            {
+                Data data = {0};
+                if(isgraph(left) != 0)
+                {
+                    data.value = (int) (*left);
+                    memFlag = insertDataWord(&data);
+                    if(memFlag != wordCreationSuccess)
+                        flag = error;
+                }
+                else
+                    flag = illegalString;
+            }
+        }
+        return flag;
+    }
+    
+    
     
 }
 
