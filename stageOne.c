@@ -560,6 +560,7 @@ StringFlags insertStringToMemory(const char *str)
 {
     StringFlags flag = legalString;
     MemoryFlags memFlag;
+    Data data = {0};
     char *left, *right, *p = str;
     if(str == NULL || *str == '\0')
         flag = illegalString;
@@ -567,7 +568,7 @@ StringFlags insertStringToMemory(const char *str)
     {
         left = strchr(str, '"');
         right = strrchr(str, '"');
-        if(left == NULL || right == NULL || left == right || (left+1) == right) /* Not enough " (needs at least 2 different ones to contain the string) */
+        if(left == NULL || right == NULL || left == right) /* Not enough " (needs at least 2 different ones to contain the string) */
             flag = illegalString;
         else
         {
@@ -587,7 +588,6 @@ StringFlags insertStringToMemory(const char *str)
             left++; /* Now left is the first char of the string */
             while(left < right && flag == legalString)
             {
-                Data data = {0};
                 if(isgraph(left) != 0)
                 {
                     data.value = (int) (*left);
@@ -597,6 +597,13 @@ StringFlags insertStringToMemory(const char *str)
                 }
                 else
                     flag = illegalString;
+            }
+            if(flag == legalString)
+            {
+                data.value = 0;
+                memFlag = insertDataWord(&data);
+                if(memFlag != wordCreationSuccess)
+                    flag = error;
             }
         }
         return flag;
