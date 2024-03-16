@@ -59,7 +59,6 @@ MemoryFlags insertDataWord(Data *dataStruc) {
     if (dataFlag == memoryAvailable) {
         dataWordd->bits[WORD_LENGTH] = '\0';
         insertIntoBinaryWord(dataWordd, dataStruc->value, 0, 14);
-        printf("%s\n", dataWordd->bits);
         if (headData == NULL){
             headData = dataWordd;
         } else tailData->nextWord = dataWordd;

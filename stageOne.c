@@ -1,9 +1,8 @@
 #include "data.h"
 
-extern HashTable macroHashTable;
+
 extern HashTable symbolHashTable;
 extern int IC, DC;
-extern char * registersArr[], * instructionArr[];
 extern Operation operationsArr[];
 
 StageOneFlags stageOne(FILE *fp, char *fileName) {
@@ -23,13 +22,12 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
         opFlag = notReadOperands;
         memFlag = memoryAvailable;
         contextFlag = lineContextSO(line, &possibleOpCode);
-        printf("line %d, flag: %d, opcode: %d\n", lineCounter, contextFlag, possibleOpCode);
         switch(contextFlag) {
             case entryDefinition:
-                contextFlag = defineExternOrEntryLabels(line,True);
+                contextFlag = defineExternOrEntryLabel(line,True);
                 break;
             case externDefinition:
-                contextFlag = defineExternOrEntryLabels(line,False);
+                contextFlag = defineExternOrEntryLabel(line,False);
                 break;
             case constantDefinition:
                 contextFlag = defineConstant(line);
@@ -72,44 +70,35 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
             default:
                 break;
         }
-        printf("%d \n", memFlag);
         /*TODO write an error handling function for operands and use here*/
         /*It should get all the flags in this function*/
         lineCounter++;
     }
-    addDataToMemory();
+    
+    updateDataLabels();
     printSymbols();
-    printMemory();
+    addDataToMemory();
     freeSymbols();
     freeMemory();
 }
 
-/*Return flags besides errors:
-skipLine
-isData
-isString
-isOperation
-entryDefinition
-externDefinition
-constantDefinition
-
-The function is a bit of black magic to be honest working so well after a first try.
-I tried to touch it and change some of the 'if' statement to a switch-case.
+/*
+The function is a bit of black magic to be honest working so well after the first try.
+I tried to touch it and combine some of the 'if' statement to a switch-case.
 It didn't work well as while the function outputted the correct flags
 and initialized the Labels, but for some reason it gave them some garbage values
-and flag, so now I am afraid to touch it.
-
-Yet I will try to document it as best to my abilities.
+and flag, so now I am afraid to touch it. Yet I will try to document it as best to my abilities.
 
 The function is a bit like the pre assembler's line context function, in  that
 that it uses the first two strings in the line to return a flag on how
 the first stage function should continue. (there is also a 3rd string, incase
 there is a label before an instruction where it shouldn't be)
 
-It gets the a pointer to the line and to an integer to possibly store 
-the opcode of the operation in the line.
-
-It 
+After first checking for a comment line or an empty line it checks if the first string in the line is a label definition.
+If it is, it is already added and we look it up in the table, create a symbol for it, and insert it to the table.
+Then we check for errors and if we entered a symbol.
+If we did, check the second string for instructions or an operation and change the flag accordingly.
+If no symbol entered, we do basically the same but for the second String
 */
 StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
     int i, stringsCounter;
@@ -119,18 +108,13 @@ StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
     char str1[MAX_LABEL_SIZE+1], str2[MAX_LABEL_SIZE], str3[MAX_LABEL_SIZE];
     stringsCounter = sscanf(line, "%32s %31s, %31s", str1, str2, str3);
 
-    /*Check for empty line*/
-    if (!stringsCounter) contextFlag = skipLine;
-
-    /*Check for comment line*/
-    else if (*str1 == ';') contextFlag = skipLine;
-
-
+    
+    if (!stringsCounter) contextFlag = skipLine;/*Check for empty line*/
+    else if (*str1 == ';') contextFlag = skipLine;/*Check for comment line*/
     else{
         /*Checking if the first string can be a legal label*/
         if (isLabelDefinition(str1)) {
             i = lookUpTable(&symbolHashTable, str1);
-
             /*Initializing entry label. If it wasn't an entry label isLabelDefinition would return false*/
             if (i != NOT_FOUND) {
                 symbolItem = symbolHashTable.items + i;
@@ -154,7 +138,7 @@ StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
             /*If a symbol has been defined*/
             if (symb != NULL) {
                 /*Check the second string for instructions*/
-                if((i = findInStringArray(str2, instructionArr, INSTRUCTIONS_SIZE)) != NOT_FOUND) {
+                if((i = findInstruction(str2)) != NOT_FOUND) {
                     switch(i) {
                         case 0:
                             contextFlag = warningLabelInDumbPlace;
@@ -177,7 +161,7 @@ StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
                     }
                     symb->attr = data;
                     symb->value = DC;
-                } else if((i = findInOperationsArray(str2))!= NOT_FOUND) {
+                } else if((i = findOperation(str2))!= NOT_FOUND) {
                     /*Check the second string for operations*/
                     contextFlag = isOperation;
                     *possibleOpCode = i;
@@ -200,9 +184,9 @@ StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
                 /*a symbol hasn't been defined*/
 
                 /*Checking if the first string is an instruction*/
-                if ((i = findInStringArray(str1, instructionArr, INSTRUCTIONS_SIZE)) != NOT_FOUND) {
+                if ((i = findInstruction(str1)) != NOT_FOUND) {
                     CHECK_INSTRUCTIONS
-                } else if((i = findInOperationsArray(str1)) != NOT_FOUND) {
+                } else if((i = findOperation(str1)) != NOT_FOUND) {
                     /*Checking if the first string is an Operation*/
                     contextFlag = isOperation;
                     *possibleOpCode = i;
@@ -215,69 +199,37 @@ StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
 }
 
 
-/*When checking for labels in operands don't use this function use the one
-in util.c*/
-Bool isLegalSymbol(char *possibleSymbol, Bool isConst) {
-    Bool flag= isLabelLegal(possibleSymbol);
+
+
+
+
+StageOneFlags defineExternOrEntryLabel(char *line, Bool isEntry) {
+    char *p, label[MAX_LABEL_SIZE], garbage[MAX_LABEL_SIZE];
+    StageOneFlags flag = allclearSO;
     Symbol *symb;
     int i;
-    if(flag) {
-        i = lookUpTable(&symbolHashTable, possibleSymbol);
-        /*If a Label is entry the pointer to 'item' in the table will be NULL*/
-        if (i != NOT_FOUND && !isConst) {
-            symb = symbolHashTable.items[i].item;
-            flag = symb->entry;
-        } else flag = (i == NOT_FOUND);
-        i = lookUpTable(&macroHashTable, possibleSymbol);
-        if (flag) flag = (i == NOT_FOUND);
-    }
-    return flag;
-}
-
-Bool isLabelDefinition(char* possibleLabel) {
-    Bool flag;
-    char *p;
-    p = strrchr(possibleLabel, ':');
-    flag = (p != NULL);
-    if (flag) {
-        if (*(p+1) == '\0') {
-            *p = '\0';
-            flag = isLegalSymbol(possibleLabel, False);
-        } else flag = False;
-    }
-    return flag;
-}
-
-/*Should be called only if the "externDefinition" flag is on*/
-
-StageOneFlags defineExternOrEntryLabels(char *line, Bool isEntry) {
-    char *p, *token, *delimiter = " \n";
-    StageOneFlags flag;
-    Symbol *symb;
-    int i;
+    *garbage = '\0';
+    *label = '\0';
     if (isEntry)
         p = strchr(line, '.') + 6;
     else p = strchr(line, '.') + 7;
-    token = strtok(p, delimiter);
-    while(token != NULL) {
-        if(isLegalSymbol(token, False) && (i = insertToTable(&symbolHashTable, token)) != NOT_FOUND) {
-            symb = MALLOC_SYMBOL;
-            EXIT_IF(symb == NULL)
-            symb->symbol = symbolHashTable.items[i].name;
-            if (isEntry) {
-                symb->attr = undefined;
-            } else symb->attr = external;
-            symb->entry = isEntry;
-            symb->value = 0;
+
+    sscanf(p, "%s %s", label, garbage);
+    printf("%s\n", label);
+    printf("%s\n", garbage);
+    if (*garbage != '\0' || *label == '\0') flag = errorDefiningEntryOrExtern;
+    if(flag == allclearSO && isLegalSymbol(label, True) && (i = insertToTable(&symbolHashTable, label)) != NOT_FOUND) {
+        symb = MALLOC_SYMBOL;
+        EXIT_IF(symb == NULL)
+        symb->symbol = symbolHashTable.items[i].name;
+        if (isEntry) {
+            symb->attr = undefined;
+        } else symb->attr = external;
+        symb->entry = isEntry;
+        symb->value = 0;
             symbolHashTable.items[i].item = symb;
-            flag = allclearSO;
-        } else {
-            printf("%s\n", token);
-            flag = errorIllegalSymbolOrTableFull;
-            break;
-        }
-        token = strtok(NULL, delimiter);
-    }
+        flag = allclearSO;
+    } else flag = errorDefiningEntryOrExtern;
     return flag;
 }
 
@@ -308,254 +260,9 @@ StageOneFlags defineConstant(char *line) {
     }
     return flag;
 }
-void freeSymbols() {
-    int indexOfSymbol;
-    Symbol *symb;
-    for (indexOfSymbol = 0; indexOfSymbol < HASHSIZE; indexOfSymbol++) {
-        if ((symb = symbolHashTable.items[indexOfSymbol].item) != NULL) {
-            free(symb);
-            symbolHashTable.items[indexOfSymbol].item = NULL;
-        }
-    }
-}
-
-
-/*
-DEBUGGING FUNCTION
-*/
-void printSymbols() {
-    int indexOfSymbol;
-    Symbol *symb;
-    for (indexOfSymbol = 0; indexOfSymbol < HASHSIZE; indexOfSymbol++) {
-        if ((symb = symbolHashTable.items[indexOfSymbol].item) != NULL) {
-            printf("name: %s, value: %d, entry: %d, attr: %d\n", symb->symbol,symb->value,symb->entry,symb->attr );
-        }
-    }
-    
-}
 
 
 
-OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
-{
-    
-    OperandsFlags flag = legal1Operand;
-    char *token;
-    const char *delimiter = " , \n";
-    int i, operandCounter = 0;
-    token = strtok(str, delimiter);
-
-    if(token == NULL)
-        flag = noOperands;
-        
-    while(token != NULL && operandCounter < 2 && flag == legal1Operand)
-    {
-        flag = getOperandType(token);
-        printf("%s %d\n", token, flag);
-        switch(flag) 
-        {
-            case isConstant:
-            {
-                wholeNum num = string_to_int(++token);
-                if(num.isNum && IN_CONST_RANGE(num.result))
-                {
-                    operandCounter++;
-                    if(operandCounter == 1)
-                    {
-                        field1->symbol = NULL;
-                        field1->type = immediate;
-                        field1->value = num.result;
-                        flag = legal1Operand;
-                    }
-                    if(operandCounter == 2)
-                    {
-                        field2->symbol = NULL;
-                        field2->type = immediate;
-                        field2->value = num.result;
-                        flag = legal2Operands;
-                    }
-                }
-                else if((i = lookUpTable(&symbolHashTable, token)) != NOT_FOUND) 
-                {
-                    Symbol *symb = symbolHashTable.items[i].item;
-                    if (symb->attr == constant) 
-                    {
-                        operandCounter++;
-                        if(operandCounter == 1)
-                        {
-                            field1->symbol = NULL;
-                            field1->type = immediate;
-                            field1->value = symb->value;
-                            flag = legal1Operand;
-                        }
-                        if(operandCounter == 2)
-                        {
-                            field2->symbol = NULL;
-                            field2->type = immediate;
-                            field2->value = symb->value;
-                            flag = legal2Operands;
-                        }
-                    } 
-                    else 
-                        flag = illegalConstantOperand;
-                }
-                else
-                    flag = illegalConstantOperand;
-                break;
-            }
-                
-            case isLabel:
-            { 
-                char *p = (char *) (calloc(strlen(token), sizeof(char)));
-                if(p != NULL)
-                {
-                    strcpy(p, token);
-                    operandCounter++;
-                    if(operandCounter == 1)
-                    {
-                        field1->symbol = p;
-                        field1->type = direct;
-                        field1->value = 0;
-                        flag = legal1Operand;
-                    }
-                    if(operandCounter == 2)
-                    {
-                        field2->symbol = p;
-                        field2->type = direct;
-                        field2->value = 0;
-                        flag = legal2Operands;
-                    }
-                }
-                else
-                {
-                    flag = failedCalloc;
-                    exit(EXIT_FAILURE);
-                }
-                break;
-            }
-
-            case isArray:
-            {
-                char *left = NULL, *right = NULL, label[MAX_LABEL_SIZE], brc[MAX_LABEL_SIZE], *p;
-                int i, size = strlen(token);
-                wholeNum num;
-                left = strchr(token, '[');
-                right = strchr(token, ']');
-                i = size - strlen(left);
-                strncpy(label, token, i);
-                label[i] = '\0';
-                p = (char *) (calloc(strlen(label), sizeof(char)));
-                if(p != NULL)
-                {
-                    strcpy(p,label);
-                    left++;
-                    size = strlen(left);
-                    i = size - strlen(right);
-                    strncpy(brc, left, i);
-                    brc[i] = '\0';
-                    num = string_to_int(brc);
-                    if(num.isNum && IN_CONST_RANGE(num.result))
-                    {
-                        operandCounter++;
-                        if(operandCounter == 1)
-                        {
-                            field1->symbol = p;
-                            field1->type = index;
-                            field1->value = num.result;
-                            flag = legal1Operand;
-                        }
-                        if(operandCounter == 2)
-                        {
-                            field2->symbol = p;
-                            field2->type = index;
-                            field2->value = num.result;
-                            flag = legal2Operands;
-                        }  
-                    }
-                    else if((i = lookUpTable(&symbolHashTable, brc)) != NOT_FOUND)
-                    {
-                        Symbol *symb = symbolHashTable.items[i].item;
-                        if(symb->attr == constant)
-                        {
-                            operandCounter++;
-                            if(operandCounter == 1)
-                            {
-                                field1->symbol = p;
-                                field1->type = index;
-                                field1->value = symb->value;
-                                flag = legal1Operand;
-                            }
-                            if(operandCounter == 2)
-                            {
-                                field2->symbol = p;
-                                field2->type = index;
-                                field2->value = symb->value;
-                                flag = legal2Operands;
-                            }  
-                        }
-                        else
-                            flag = illegalConstantOperand;
-                    }
-                    else
-                        flag = illegalConstantOperand;
-                }
-                else
-                {
-                    flag = failedCalloc;
-                    exit(EXIT_FAILURE);
-                }
-                break;
-            }
-            case isRegister:
-            {
-                int r = findInStringArray(token, registersArr, 8);
-                operandCounter++;
-                if(operandCounter == 1)
-                {
-                    field1->symbol = NULL;
-                    field1->type = reg;
-                    field1->value = r;
-                    flag = legal1Operand;
-                }
-                if(operandCounter == 2)
-                {
-                    field2->symbol = NULL;
-                    field2->type = reg;
-                    field2->value = r;
-                    flag = legal2Operands;
-                }  
-                break;
-            }
-            default:
-                flag = illegalOperand;
-                break;    
-        }
-        token = strtok(NULL, delimiter);
-    }
-    printf("field1: %s %d %d\n",field1->symbol, field1->type, field1->value);
-    printf("field2: %s %d %d\n",field2->symbol, field2->type, field2->value);
-    if (token != NULL && operandCounter == 2)
-        flag = tooManyOperands;
-    return flag;
-}
-
-OperandsFlags getOperandType(char *token) 
-{
-    OperandsFlags flag = illegalOperand;
-    if(token[0] == '#') 
-        flag = isConstant;
-
-    else if(isLabelLegal(token) == True)
-        flag = isLabel;
-
-    else if(isLegalArray(token) == True)
-        flag = isArray;
-
-    else if(findInStringArray(token, registersArr, 8) != -1)
-        flag = isRegister;
-
-    return flag;
-}
 
 StageOneFlags insertStringToMemory(const char *str)
 {
@@ -665,3 +372,4 @@ StageOneFlags insertData(char *line) {
     }
     return flag;
 }
+

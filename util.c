@@ -108,7 +108,9 @@ char * instructionArr[] = {".entry" ,".extern", ".define", ".data",".string", MA
 Given a string, a string array and its size, it checks if the string is in the array.
 If it is 'index' is updated. If not index stays NOT_FOUND. Returns the index.
 */
-int findInStringArray(char* word, char *arr[], int size) {
+static int findInStringArray(char*, char**, int);
+
+static int findInStringArray(char* word, char *arr[], int size) {
     int in, i;
     in = NOT_FOUND;
     for (i = 0; i < size; i++) {
@@ -119,7 +121,7 @@ int findInStringArray(char* word, char *arr[], int size) {
     }
     return in;
 }
-int findInOperationsArray(char* word) {
+int findOperation(char* word) {
     int in, i;
     in = NOT_FOUND;
     for (i = 0; i < OPERATIONS_SIZE; i++) {
@@ -131,7 +133,12 @@ int findInOperationsArray(char* word) {
     return in;
 }
 
-
+int findRegister(char* word) {
+    return findInStringArray(word, registersArr, REGISTERS_SIZE);
+}
+int findInstruction(char* word) {
+     return findInStringArray(word, instructionArr, INSTRUCTIONS_SIZE);
+} 
 /*
 Given a string the function checks if it can Be a legal label.
 It first checks if the word is either: 
@@ -171,7 +178,7 @@ In the end ans is returned.
 Bool isPreservedWord(char *label) {
     Bool ans;
     ans = False;
-    if (findInOperationsArray(label) != NOT_FOUND) ans = True;
+    if (findOperation(label) != NOT_FOUND) ans = True;
     else if (findInStringArray(label, registersArr, REGISTERS_SIZE) != NOT_FOUND) ans = True;
     else if (findInStringArray(label, instructionArr, INSTRUCTIONS_SIZE) != NOT_FOUND) ans = True;
     return ans;

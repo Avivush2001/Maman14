@@ -1,13 +1,9 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <math.h>
-#include "macros.h"
-#include "structures.h"
-#include "util.h"
-#include "hashtable.h"
-#include "preassembler.h"
-#include "memory.h"
-#include "stageOne.h"
+
+#include "./headers/standardLibrary.h"
+#include "./headers/macros.h"
+#include "./headers/structures.h"
+#include "./headers/util.h"
+#include "./headers/hashtable.h"
+#include "./headers/preassembler.h"
+#include "./headers/memory.h"
+#include "./headers/stageOne.h"

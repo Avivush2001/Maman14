@@ -44,6 +44,7 @@ typedef enum {
     errorEnteringData,
     errorMemoryFull,
     errorOperandTypes,
+    errorDefiningEntryOrExtern,
     illegalString,
     legalString, 
     allclearSO
@@ -67,10 +68,15 @@ typedef enum {
 
 
 StageOneFlags stageOne(FILE *, char *);
+
+/*
+It gets the a pointer to the line and to an integer to possibly store 
+the opcode of the operation in the line. In the end it returns a flag, and inserts labels when encountered.
+*/
 StageOneFlags lineContextSO(char *, int *);
 Bool isLegalSymbol(char *, Bool);
 Bool isLabelDefinition(char*);
-StageOneFlags defineExternOrEntryLabels(char *, Bool);
+StageOneFlags defineExternOrEntryLabel(char *, Bool);
 StageOneFlags defineConstant(char *);
 OperandsFlags areLegalOperands(char *, Field *, Field *);
 OperandsFlags getOperandType(char *);
@@ -78,3 +84,4 @@ StageOneFlags insertStringToMemory(const char *);
 StageOneFlags insertData(char *);
 void freeSymbols();
 void printSymbols();
+void updateDataLabels();
