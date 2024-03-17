@@ -25,7 +25,8 @@
         "util.h": "c",
         "stdlib.h": "c",
         "macros.h": "c",
-        "stageone.h": "c"
+        "stageone.h": "c",
+        "stagetwo.h": "c"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/gcc",
     "cSpell.words": [
