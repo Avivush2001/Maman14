@@ -199,11 +199,8 @@ StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
 }
 
 
-
-
-
-
-StageOneFlags defineExternOrEntryLabel(char *line, Bool isEntry) {
+StageOneFlags defineExternOrEntryLabel(char *line, Bool isEntry) 
+{
     char *p, label[MAX_LABEL_SIZE], garbage[MAX_LABEL_SIZE];
     StageOneFlags flag = allclearSO;
     Symbol *symb;
@@ -261,9 +258,6 @@ StageOneFlags defineConstant(char *line) {
     return flag;
 }
 
-
-
-
 StageOneFlags insertStringToMemory(const char *str)
 {
     StageOneFlags flag = legalString;
@@ -317,9 +311,7 @@ StageOneFlags insertStringToMemory(const char *str)
         }
         
     }
-    return flag;
-    
-    
+    return flag;  
 }
 
 StageOneFlags insertData(char *line) {
