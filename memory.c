@@ -220,9 +220,9 @@ MemoryFlags insertRegisterBin(int reg1, int reg2) {
 /******************Memory Utility Functions***************/
 
 /*
-The function gets the word, unsigned data, an index from which we will insert into the BinarY word,
+The function gets the word, unsigned data, an index from which we will insert into the Binary word,
 And the number of bits of the unsigned data's bit field.
-The Algorithm to conVert into a binary word Is Very simple:
+The Algorithm to convert into a binary word Is Very simple:
 
 *note the algorithm only works if the number is positive, and since data is unsigned
 it will be considered as such.
