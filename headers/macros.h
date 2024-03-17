@@ -20,7 +20,7 @@
 #define READ_FIRST_TWO_FIELDS sscanf(line, "%31s %31s", str1, str2)
 
 #define PRINT_ERROR(_stage,_errorMessage) fprintf(stderr,"Error encountered during %s stage!\n", _stage);\
-fprintf(stderr,"At line %d in file %s: %s",lineCounter, fileName, _errorMessage);
+fprintf(stderr,"At line %d: %s",lineCounter, _errorMessage);
 
 #define ERROR_CASE(_stage,_flag, _errorMessage) case _flag:\
 PRINT_ERROR(_stage, _errorMessage);
