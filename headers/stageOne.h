@@ -13,7 +13,7 @@
             case 2:\
                 if(isLegalSymbol(str2, True)) {\
                     contextFlag = constantDefinition;\
-                } else contextFlag = errorIllegalSymbol;\
+                } else contextFlag = errorIllegalSymbolOrTableFull;\
                 break;\
             /*ERROR if the string equals one of the other items in the table*/\
             default:\
@@ -22,6 +22,9 @@
         }
 #define IN_CONST_RANGE(_val) (_val <= MAX_CONST && _val >= MIN_CONST)
 #define IN_DATA_RANGE(_val) (_val <= MAX_DATA && _val >=MIN_DATA)
+#define ERROR_CASE_SO(_flag, _errorMessage) ERROR_CASE("First", _flag, _errorMessage)\
+flag = errorEncounteredSO;\
+break;
 
 typedef enum {
     readingLineSO,
@@ -36,9 +39,7 @@ typedef enum {
     warningLabelInDumbPlace,
     errorEncounteredSO,
     errorIllegalKeyWord,
-    errorIllegalSymbol,
     errorSymbolHashTableFull,
-    errorDefiningLabel,
     errorDefiningConstant,
     errorIllegalSymbolOrTableFull,
     errorEnteringData,
@@ -66,7 +67,9 @@ typedef enum {
 } OperandsFlags;
 
 
-
+/*
+This is the main first stage function.
+*/
 StageOneFlags stageOne(FILE *, char *);
 
 /*
@@ -76,12 +79,26 @@ the opcode of the operation in the line. In the end it returns a flag, and inser
 StageOneFlags lineContextSO(char *, int *);
 Bool isLegalSymbol(char *, Bool);
 Bool isLabelDefinition(char*);
+
+/*
+This function defines an external or entry label. It gets the line and
+if it is an entry call, handles the definition, and returns a flag.
+*/
 StageOneFlags defineExternOrEntryLabel(char *, Bool);
+
+/*
+This functions gets the line and defines a constant.
+*/
 StageOneFlags defineConstant(char *);
 OperandsFlags areLegalOperands(char *, Field *, Field *);
 OperandsFlags getOperandType(char *);
 StageOneFlags insertStringToMemory(const char *);
+
+/*
+Inserts data from the line.
+*/
 StageOneFlags insertData(char *);
+StageOneFlags errorHandlerSO(StageOneFlags, MemoryFlags, OperandsFlags, int);
 void freeSymbols();
 void printSymbols();
 void updateDataLabels();

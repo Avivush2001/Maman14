@@ -65,7 +65,7 @@ PreassemblerFlags checkForMacroCall(char *, int *);
 PreassemblerFlags canDefineMacro(char *, int);
 
 /*Error handler. Using the context flag decide which error to display.*/
-PreassemblerFlags errorHandler(PreassemblerFlags *, PreassemblerFlags, int, char *);
+PreassemblerFlags errorHandlerPA(PreassemblerFlags *, PreassemblerFlags, int, char *);
 
 /*Frees the macros in the table, not the table itself.
 We won't need the actual macros in the rest of the assembler's operations,

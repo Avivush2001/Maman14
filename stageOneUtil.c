@@ -93,6 +93,7 @@ Bool isLabelDefinition(char* possibleLabel) {
 }
 
 OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
+
 {
     
     OperandsFlags flag = legal1Operand;
@@ -290,5 +291,35 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
     if (token != NULL && operandCounter == 2)
         flag = tooManyOperands;
         
+    return flag;
+}
+
+StageOneFlags errorHandlerSO(StageOneFlags contextFlag, MemoryFlags memFlag, OperandsFlags opFlag, int lineCounter) {
+    StageOneFlags flag = allclearSO;
+    switch (contextFlag) {
+        ERROR_CASE_SO(errorIllegalKeyWord, "Illegal keyword encountered!\n")
+        ERROR_CASE_SO(errorIllegalSymbolOrTableFull, "Illegal symbol encountered or the symbol hash table is full!\n")
+        ERROR_CASE_SO(errorSymbolHashTableFull, "Symbol is legal but the table is full!\n")
+        ERROR_CASE_SO(errorDefiningConstant, "Constant definition failed due to incorrect syntax or illegal posting!\n")
+        ERROR_CASE_SO(errorEnteringData, "Data entry failed due to incorrect syntax or illegal posting!\n")
+        ERROR_CASE_SO(illegalString, "String entry failed, check it again!\n")
+        ERROR_CASE_SO(errorDefiningEntryOrExtern, "Entry or external label definition failed!\n")
+        ERROR_CASE_SO(errorOperandTypes, "Illegal operand types or count for the current operation!\n")
+        ERROR_CASE_SO(errorMemoryFull, "The memory is full!\n")
+        default:
+            break;
+    }
+    switch (opFlag) {
+        ERROR_CASE_SO(illegalOperand, "One or two illegal Operands!\n")
+        ERROR_CASE_SO(illegalConstantOperand, "An operand expected to be constant, but isn't defined!\n")
+        ERROR_CASE_SO(tooManyOperands, "Too many operands than allowed!\n")
+        default:
+            break;
+    }
+    switch (memFlag) {
+        ERROR_CASE_SO(memoryFull, "The memory is full!\n")
+        default:
+            break;
+    }   
     return flag;
 }

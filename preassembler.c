@@ -134,7 +134,7 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName) {
         }
         lineCounter++;
         /*Handle errors (step 9)*/
-        errorFlagPA = errorHandler(&contextFlag, errorFlagPA,lineCounter, fileName);
+        errorFlagPA = errorHandlerPA(&contextFlag, errorFlagPA,lineCounter, fileName);
     }
     freeMacrosFromTable();
     fclose(nfp);
@@ -212,7 +212,7 @@ PreassemblerFlags canDefineMacro(char *macroName, int stringCount) {
 }
 
 /*Error handler. Using the context flag decide which error to display.*/
-PreassemblerFlags errorHandler(PreassemblerFlags *contextFlag, PreassemblerFlags errorFlag, int lineCounter, char *fileName) {
+PreassemblerFlags errorHandlerPA(PreassemblerFlags *contextFlag, PreassemblerFlags errorFlag, int lineCounter, char *fileName) {
     PreassemblerFlags newFlag;
     newFlag = errorFlag;
     switch (*contextFlag) {

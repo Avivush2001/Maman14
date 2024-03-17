@@ -70,11 +70,9 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
             default:
                 break;
         }
-        /*TODO write an error handling function for operands and use here*/
-        /*It should get all the flags in this function*/
+        errorFlagSO = errorHandlerSO(contextFlag, memFlag, opFlag, lineCounter);
         lineCounter++;
     }
-    
     updateDataLabels();
     printSymbols();
     addDataToMemory();
@@ -106,9 +104,8 @@ StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
     HashTableItem *symbolItem;
     StageOneFlags contextFlag = readingLineSO;
     char str1[MAX_LABEL_SIZE+1], str2[MAX_LABEL_SIZE], str3[MAX_LABEL_SIZE];
+    /*Get strings*/
     stringsCounter = sscanf(line, "%32s %31s, %31s", str1, str2, str3);
-
-    
     if (!stringsCounter) contextFlag = skipLine;/*Check for empty line*/
     else if (*str1 == ';') contextFlag = skipLine;/*Check for comment line*/
     else{
@@ -198,24 +195,36 @@ StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
     return contextFlag;
 }
 
-
+/*
+This function defines an external or entry label. It finds the instruction in the line
+and skips it, and then scans two strings, one for the label and another one for unexpected strings.
+Look it up in the table, if it isn't found check if it is legal and insert it.
+If it is found, incase it is already an entry print a warning, if not turn the isEntry flag on.
+If it is found and it is defining an external label, and it is already external print a warning, if not change the flag to an error.
+*/
 StageOneFlags defineExternOrEntryLabel(char *line, Bool isEntry) 
 {
-    char *p, label[MAX_LABEL_SIZE], garbage[MAX_LABEL_SIZE];
+    char *p, label[MAX_LABEL_SIZE], garbage[2];
     StageOneFlags flag = allclearSO;
     Symbol *symb;
     int i;
     *garbage = '\0';
     *label = '\0';
+
+    /*Skip the instruction*/
     if (isEntry)
         p = strchr(line, '.') + 6;
     else p = strchr(line, '.') + 7;
 
-    sscanf(p, "%31s %31s", label, garbage);
-    printf("%s\n", label);
-    printf("%s\n", garbage);
+    /*Get the label*/
+    sscanf(p, "%31s %1s", label, garbage);
+
+    /*Check the input*/
     if (*garbage != '\0' || *label == '\0') flag = errorDefiningEntryOrExtern;
+
     i = lookUpTable(&symbolHashTable, label);
+
+    /*If it isn't Found*/
     if (i == NOT_FOUND && flag == allclearSO) {
         if(isLegalSymbol(label, True) && (i = insertToTable(&symbolHashTable, label)) != NOT_FOUND) {
             symb = MALLOC_SYMBOL;
@@ -226,29 +235,36 @@ StageOneFlags defineExternOrEntryLabel(char *line, Bool isEntry)
             } else symb->attr = external;
             symb->entry = isEntry;
             symb->value = 0;
-                symbolHashTable.items[i].item = symb;
-            flag = allclearSO;
+            symbolHashTable.items[i].item = symb;
         } else flag = errorDefiningEntryOrExtern;
-    } else if (flag == allclearSO) {
 
+    } else if (flag == allclearSO) { /*If it is Found*/
+        symb = symbolHashTable.items[i].item;
         if (isEntry) {
-            symb = symbolHashTable.items[i].item;
-            if (symb->entry) {
+            if (symb->entry) 
                 fprintf(stderr, "WARNING entry label %s defined multiple times.\n", label);
-            }
-            if (symb->attr != external && symb->attr != constant) {
+            
+            if (symb->attr != external && symb->attr != constant) 
                 symb->entry = isEntry;
-                flag = allclearSO;
-            } else flag = errorDefiningEntryOrExtern;
+            else flag = errorDefiningEntryOrExtern;
         } else {
-            fprintf(stderr, "WARNING extern label %s defined multiple times.\n", label);
-            flag = allclearSO;
+            if (symb->attr == external)
+                fprintf(stderr, "WARNING extern label %s defined multiple times.\n", label);
+            else flag = errorDefiningEntryOrExtern;
+            
         }
     }
-    
     return flag;
 }
 
+/*
+The function skips the instruction in the line, and scanf for 4 strings:
+the symbol of the constant (not it is not checked for legality since it
+is checked in the line context function)
+the equals character and the constant itself, and leftover graphical characters.
+
+It checks if the parameters are legal, inserting the constant to the table and initializing it. 
+*/
 StageOneFlags defineConstant(char *line) {
     char *p = strchr(line, '.') + 7, str1[MAX_LABEL_SIZE], str2[MAX_LABEL_SIZE], str3[MAX_LABEL_SIZE] ,garbage[2];
     StageOneFlags flag;
@@ -256,12 +272,17 @@ StageOneFlags defineConstant(char *line) {
     Symbol *symb;
     wholeNum value = {False, 0};
     *str1 = *str2 = *str3 = *garbage ='\0';
+    
+    /*Get the parameters*/
     sscanf(p, "%31s %31s %31s %1s", str1, str2, str3, garbage);
+    /*Check legality of parameters*/
     if (*str3 == '\0' || strcmp(str2,"=") || *garbage != '\0') {
         flag = errorDefiningConstant;
     } else {
+        /*Convert the string to an int.*/
         value = string_to_int(str3);
-        if (isLegalSymbol(str1, True)  && (i = insertToTable(&symbolHashTable, str1)) != NOT_FOUND && value.isNum && IN_CONST_RANGE(value.result)) {
+        /*Ensure the legality of the value and insert the constant.*/
+        if ((i = insertToTable(&symbolHashTable, str1)) != NOT_FOUND && value.isNum && IN_CONST_RANGE(value.result)) {
             symb = MALLOC_SYMBOL;
             EXIT_IF(symb == NULL)
             symb->symbol = symbolHashTable.items[i].name;
@@ -333,43 +354,52 @@ StageOneFlags insertStringToMemory(const char *str)
     return flag;  
 }
 
+/*
+The function skips the instruction, checks if there are commas and if their placements are correct.
+Then it uses strtok to read as many tokens as there are, check their legality and insert
+them as data to the memory.
+*/
 StageOneFlags insertData(char *line) {
     const char *delimiter = " , \n";
     char *p = strchr(line,'.') + 5, *token;
-    Bool flagNoComma = False;
+    Bool flagNoComma = False, commaFlag = True;
     StageOneFlags flag = allclearSO;
     MemoryFlags memFlag;
     int i = 0, j;
     if (strchr(line, ',') == NULL) {
         flagNoComma = True;
-    } /*else if(!isgraph(*(strchr(line, ',')-1))) {
-        flag = errorEnteringData;
-    }*/
-    for(j = 0; j < strlen(p); j++) {
-        if (isgraph(*(p+j)) && *(p+j) != ',')
-            break;
-        if (*(p+j) == ',') {
-            flag = errorEnteringData;
-            break;
-        }
-
     }
+    
+    /*Check the commas*/
+    for(j = 0; j < strlen(p) && !flagNoComma; j++) {
+        if (isgraph(*(p+j))) {
+            commaFlag = True;
+            if (*(p+j) == ',')
+                commaFlag = False;
+        }
+        
+    }
+    
+    if (!commaFlag) flag = errorEnteringData;
+    /*Start of insertion loop*/
     token = strtok(p, delimiter);
     while (token != NULL && flag != errorEnteringData) {
+        /*Check in case there are too many tokens*/
         if ((i++) == 1 && flagNoComma) 
             flag = errorEnteringData;
         else {
             wholeNum number;
             Data data = {0};
-            number = string_to_int(token);
+            number = string_to_int(token); /*Read the number*/
+            /*Check legality*/
             if (number.isNum && IN_DATA_RANGE(number.result)) {
                 data.value = number.result;
-                memFlag = insertDataWord(&data);
-            } else if((j = lookUpTable(&symbolHashTable, token)) != NOT_FOUND) {
+                memFlag = insertDataWord(&data); /*Insert the data*/
+            } else if((j = lookUpTable(&symbolHashTable, token)) != NOT_FOUND) { /*Check if it is constant*/
                 Symbol *symb = symbolHashTable.items[j].item;
                     if(symb->attr == constant) {
                         data.value = symb->value;
-                        memFlag = insertDataWord(&data);
+                        memFlag = insertDataWord(&data); /*Insert the data*/
                     } else flag = errorEnteringData;
             } else
                 flag = errorEnteringData;
