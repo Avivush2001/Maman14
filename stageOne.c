@@ -214,22 +214,41 @@ StageOneFlags defineExternOrEntryLabel(char *line, Bool isEntry) {
         p = strchr(line, '.') + 6;
     else p = strchr(line, '.') + 7;
 
-    sscanf(p, "%s %s", label, garbage);
+    sscanf(p, "%31s %31s", label, garbage);
     printf("%s\n", label);
     printf("%s\n", garbage);
     if (*garbage != '\0' || *label == '\0') flag = errorDefiningEntryOrExtern;
-    if(flag == allclearSO && isLegalSymbol(label, True) && (i = insertToTable(&symbolHashTable, label)) != NOT_FOUND) {
-        symb = MALLOC_SYMBOL;
-        EXIT_IF(symb == NULL)
-        symb->symbol = symbolHashTable.items[i].name;
+    i = lookUpTable(&symbolHashTable, label);
+    if (i == NOT_FOUND && flag == allclearSO) {
+        if(isLegalSymbol(label, True) && (i = insertToTable(&symbolHashTable, label)) != NOT_FOUND) {
+            symb = MALLOC_SYMBOL;
+            EXIT_IF(symb == NULL)
+            symb->symbol = symbolHashTable.items[i].name;
+            if (isEntry) {
+                symb->attr = undefined;
+            } else symb->attr = external;
+            symb->entry = isEntry;
+            symb->value = 0;
+                symbolHashTable.items[i].item = symb;
+            flag = allclearSO;
+        } else flag = errorDefiningEntryOrExtern;
+    } else if (flag == allclearSO) {
+
         if (isEntry) {
-            symb->attr = undefined;
-        } else symb->attr = external;
-        symb->entry = isEntry;
-        symb->value = 0;
-            symbolHashTable.items[i].item = symb;
-        flag = allclearSO;
-    } else flag = errorDefiningEntryOrExtern;
+            symb = symbolHashTable.items[i].item;
+            if (symb->entry) {
+                fprintf(stderr, "WARNING entry label %s defined multiple times.\n", label);
+            }
+            if (symb->attr != external && symb->attr != constant) {
+                symb->entry = isEntry;
+                flag = allclearSO;
+            } else flag = errorDefiningEntryOrExtern;
+        } else {
+            fprintf(stderr, "WARNING extern label %s defined multiple times.\n", label);
+            flag = allclearSO;
+        }
+    }
+    
     return flag;
 }
 
