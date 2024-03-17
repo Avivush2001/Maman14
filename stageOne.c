@@ -362,34 +362,25 @@ them as data to the memory.
 StageOneFlags insertData(char *line) {
     const char *delimiter = " , \n";
     char *p = strchr(line,'.') + 5, *token;
-    Bool flagNoComma = False;
+    Bool flagNoComma = False, commaFlag = True;
     StageOneFlags flag = allclearSO;
     MemoryFlags memFlag;
     int i = 0, j;
     if (strchr(line, ',') == NULL) {
         flagNoComma = True;
     }
-    /*NOTE for some reason when I put the 2 checks in an
-    else statement it fails.*/
-    /*Check the first comma.*/
-    for(j = 0; j < strlen(p); j++) {
-        if (isgraph(*(p+j)) && *(p+j) != ',')
-            break;
-        if (*(p+j) == ',') {
-            flag = errorEnteringData;
-            break;
+    
+    /*Check the commas*/
+    for(j = 0; j < strlen(p) && !flagNoComma; j++) {
+        if (isgraph(*(p+j))) {
+            commaFlag = True;
+            if (*(p+j) == ',')
+                commaFlag = False;
         }
+        
     }
-    /*Check the last comma.*/
-    for (j = strlen(p)-1; j >= 0; j--) {
-        if (isgraph(*(p+j)) && *(p+j) != ',')
-            break;
-        if (*(p+j) == ',') {
-            flag = errorEnteringData;
-            break;
-        }
-    }
-
+    
+    if (!commaFlag) flag = errorEnteringData;
     /*Start of insertion loop*/
     token = strtok(p, delimiter);
     while (token != NULL && flag != errorEnteringData) {
