@@ -289,5 +289,6 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
     }
     if (token != NULL && operandCounter == 2)
         flag = tooManyOperands;
+        
     return flag;
 }
