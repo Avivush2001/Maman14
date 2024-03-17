@@ -5,3 +5,6 @@ typedef enum
     errorCreatingFile,
     errorDeletingFile
 } fileFlag;
+
+fileFlag CreateEntryFile(char *fileName);
+fileFlag CreateExternFile(char *fileName);
