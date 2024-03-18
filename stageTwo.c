@@ -82,3 +82,20 @@ fileFlag CreateExternFile(char *fileName)
     }
     return flag;
 }
+
+
+
+void ConvertBinaryToBase4(Data binary) 
+{
+  char table[4] = {'0', '1', '2', '3'};
+  char result[8]; 
+  int i = 0, num = binary.value ,two_bits;
+  
+  while (num > 0) 
+  {
+    two_bits = num & 3;
+    result[i++] = table[two_bits];
+    num >>= 2;
+  }
+  result[i] = '\0'; 
+}
