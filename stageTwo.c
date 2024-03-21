@@ -113,7 +113,7 @@ fileFlag createExternFile(char *fileName)
 
 fileFlag createObFile (char *fileName) {
     int i = 100;
-    char *newName =  newFileName(fileName, ".ob");
+    char *newName = newFileName(fileName, ".ob");
     FILE *nfp;
     fileFlag flag = success;
     BinaryWord *p = memoryHead;
@@ -121,7 +121,7 @@ fileFlag createObFile (char *fileName) {
     if(nfp == NULL)
         flag = errorCreatingFile;
     else {
-        fprintf(nfp, "\t%d %d\n", IC,DC);
+        fprintf(nfp, "\t%d %d\n", IC, DC);
         while (p != NULL) {
             fprintf(nfp, "%04d\t", i);
             encodeBinaryWordToFile(nfp, p->bits);
