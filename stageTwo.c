@@ -73,34 +73,34 @@ fileFlag createEntryFile(char *fileName)
 
 fileFlag createExternFile(char *fileName)
 {
-    int i, counter = 0;
-    char *newName =  newFileName(fileName, ".ext");
+    int i, counter = 100;
+    char *newName =  newFileName(fileName, ".ext"), *possibleLabel;
     FILE *nfp;
-    Symbol *symb;
+    Symbol *label;
     fileFlag flag = success;
+    BinaryWord *p = memoryHead;
     OPEN_NEW_FILE
     if(nfp == NULL)
         flag = errorCreatingFile;
     else
     {
-        for(i = 0; i < HASHSIZE; i++)
-        {
-            /*
-            Loop is wrong, it should search the memory for labels,
-            if a memory word has a label, find it in the table, check if it is
-            external, and then enter it into the file.
-            */
-            if((symb = symbolHashTable.items[i].item) != NULL)
-            {
-                if(symb->attr == external)
-                {
-                    fprintf(nfp, "%s\t%04d\n", symb->symbol, symb->value);
-                    counter++;
-                }
+        while (p != NULL) {
+            possibleLabel = p->possibleLabel;
+            if(possibleLabel == NULL) {
+                p = p->nextWord;
+                counter++;
+                continue;
             }
+            i = lookUpTable(&symbolHashTable, possibleLabel);
+            label = symbolHashTable.items[i].item;
+            if (label->attr == external) {
+                fprintf(nfp, "%s\t%04d\n", possibleLabel, counter);
+            }
+            p = p->nextWord;
+            counter++;
         }
         fclose(nfp);
-        if(counter == 0)
+        if(counter == 100)
         {
             i = remove(newName);
             if(i != 0)

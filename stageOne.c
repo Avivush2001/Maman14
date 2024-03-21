@@ -76,6 +76,8 @@ StageOneFlags stageOne(FILE *fp) {
     addDataToMemory();
     updateMemory();
     createObFile("testOriginal");
+    createEntryFile("testOriginal");
+    createExternFile("testOriginal");
     printMemory();
     printSymbols();
     return errorFlagSO;
