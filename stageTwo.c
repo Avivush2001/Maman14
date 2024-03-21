@@ -84,35 +84,41 @@ fileFlag createExternFile(char *fileName)
     Symbol *label;
     fileFlag flag = success;
     BinaryWord *p = memoryHead;
-    OPEN_NEW_FILE
-    if(nfp == NULL)
-        flag = errorCreatingFile;
+    if(newName == NULL)
+        flag = failure;
     else
     {
-        while (p != NULL) {
-            possibleLabel = p->possibleLabel;
-            if(possibleLabel == NULL) {
+        OPEN_NEW_FILE
+        if(nfp == NULL)
+            flag = errorCreatingFile;
+        else
+        {
+            while (p != NULL) 
+            {
+                possibleLabel = p->possibleLabel;
+                if(possibleLabel == NULL) 
+                {
+                    p = p->nextWord;
+                    counter++;
+                    continue;
+                }
+                i = lookUpTable(&symbolHashTable, possibleLabel);
+                label = symbolHashTable.items[i].item;
+                if (label->attr == external) 
+                    fprintf(nfp, "%s\t%04d\n", possibleLabel, counter);
                 p = p->nextWord;
                 counter++;
-                continue;
             }
-            i = lookUpTable(&symbolHashTable, possibleLabel);
-            label = symbolHashTable.items[i].item;
-            if (label->attr == external) {
-                fprintf(nfp, "%s\t%04d\n", possibleLabel, counter);
+            fclose(nfp);
+            if(counter == 100)
+            {
+                i = remove(newName);
+                if(i != 0)
+                    flag = errorDeletingFile;
             }
-            p = p->nextWord;
-            counter++;
         }
-        fclose(nfp);
-        if(counter == 100)
-        {
-            i = remove(newName);
-            if(i != 0)
-                flag = errorDeletingFile;
-        }
+        free(newName);     
     }
-    free(newName);
     return flag;
 }
 
