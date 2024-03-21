@@ -9,7 +9,9 @@ typedef enum
 typedef enum
 {
     updateSuccess,
-    errorIllegalLabelST
+    errorIllegalLabelST,
+    errorST,
+    allclearST
 } StageTwoFlags;
 StageTwoFlags updateMemory();
 fileFlag createEntryFile(char *);

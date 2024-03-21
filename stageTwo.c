@@ -5,6 +5,24 @@ extern HashTable symbolHashTable, macroHashTable;
 extern BinaryWord *memoryHead, *memoryTail;
 extern int IC, DC;
 static void encodeBinaryWordToFile(FILE *, char*);
+
+StageTwoFlags stageTwo(char *fileName)
+{
+    StageTwoFlags flag = allclearST, temp = updateMemory();
+    if(temp != updateSuccess)
+        flag = errorST;
+    else
+    {
+        if((temp = createObFile(fileName)) != success)
+            flag = errorST;
+        if((temp = createEntryFile(fileName)) != success)
+            flag = errorST;
+        if((temp = createExternFile(fileName)) != success)
+            flag = errorST;
+    }
+    return flag;
+}
+
 StageTwoFlags updateMemory() {
     StageTwoFlags flag = updateSuccess;
     BinaryWord *p = memoryHead;
