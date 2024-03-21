@@ -85,11 +85,7 @@ fileFlag createExternFile(char *fileName)
     {
         for(i = 0; i < HASHSIZE; i++)
         {
-            /*
-            Loop is wrong, it should search the memory for labels,
-            if a memory word has a label, find it in the table, check if it is
-            external, and then enter it into the file.
-            */
+            
             if((symb = symbolHashTable.items[i].item) != NULL)
             {
                 if(symb->attr == external)
