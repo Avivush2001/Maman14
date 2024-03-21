@@ -78,41 +78,41 @@ fileFlag createEntryFile(char *fileName)
 
 fileFlag createExternFile(char *fileName)
 {
-    int i, counter = 0;
-    char *newName =  newFileName(fileName, ".ext");
+    int i, counter = 100;
+    char *newName =  newFileName(fileName, ".ext"), *possibleLabel;
     FILE *nfp;
-    Symbol *symb;
+    Symbol *label;
     fileFlag flag = success;
-    if(newName == NULL)
-        flag = failure;
+    BinaryWord *p = memoryHead;
+    OPEN_NEW_FILE
+    if(nfp == NULL)
+        flag = errorCreatingFile;
     else
     {
-        OPEN_NEW_FILE
-        if(nfp == NULL)
-            flag = errorCreatingFile;
-        else
-        {
-            for(i = 0; i < HASHSIZE; i++)
-            {
-                if((symb = symbolHashTable.items[i].item) != NULL)
-                {
-                    if(symb->attr == external)
-                    {
-                        fprintf(nfp, "%s\t%04d\n", symb->symbol, symb->value);
-                        counter++;
-                    }
-                }
+        while (p != NULL) {
+            possibleLabel = p->possibleLabel;
+            if(possibleLabel == NULL) {
+                p = p->nextWord;
+                counter++;
+                continue;
             }
-            fclose(nfp);
-            if(counter == 0)
-            {
-                i = remove(newName);
-                if(i != 0)
-                    flag = errorDeletingFile;
+            i = lookUpTable(&symbolHashTable, possibleLabel);
+            label = symbolHashTable.items[i].item;
+            if (label->attr == external) {
+                fprintf(nfp, "%s\t%04d\n", possibleLabel, counter);
             }
+            p = p->nextWord;
+            counter++;
         }
-        free(newName);
+        fclose(nfp);
+        if(counter == 100)
+        {
+            i = remove(newName);
+            if(i != 0)
+                flag = errorDeletingFile;
+        }
     }
+    free(newName);
     return flag;
 }
 
