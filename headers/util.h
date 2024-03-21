@@ -20,3 +20,5 @@ Bool isPreservedWord(char*);
 
 wholeNum string_to_int(const char *);
 Bool isLegalArray(const char *);
+
+char *newFileName(char *, char *);

@@ -15,13 +15,13 @@ int main() {
     initializeHashTable(&macroHashTable);
     initializeHashTable(&symbolHashTable);
     fp = fopen("testOriginal.as", "r");
-    flagPA = preassembler(fp, "testOriginal.am");
+    flagPA = preassembler(fp, "testOriginal");
     if (flagPA == errorEncounteredPA) {
         remove("testOriginal.am");
     }
     fclose(fp);
     fp = fopen("testOriginal.am", "r");
-    stageOne(fp, "testOriginal");
+    stageOne(fp);
     fclose(fp);
     freeTableNames(&macroHashTable);
     freeTableNames(&symbolHashTable);

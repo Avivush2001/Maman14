@@ -281,3 +281,13 @@ Bool isLegalArray(const char *str)
     return flag;
 }
 
+char *newFileName(char *fname, char *suffix) {
+    char *p;
+    int nameSize, suffixSize;
+    nameSize = strlen(fname);
+    suffixSize = strlen(suffix);
+    p = malloc(sizeof(char) * (nameSize+suffixSize+1));
+    p = strcpy(p, fname);
+    p = strcat(p, suffix);
+    return p;
+}

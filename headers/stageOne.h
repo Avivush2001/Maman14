@@ -70,7 +70,7 @@ typedef enum {
 /*
 This is the main first stage function.
 */
-StageOneFlags stageOne(FILE *, char *);
+StageOneFlags stageOne(FILE *);
 
 /*
 It gets the a pointer to the line and to an integer to possibly store 

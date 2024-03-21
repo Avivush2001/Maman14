@@ -1,27 +1,50 @@
 #include "data.h"
 
-extern HashTable macroHashTable;
-extern HashTable symbolHashTable;
+
+extern HashTable symbolHashTable, macroHashTable;
+extern BinaryWord *memoryHead, *memoryTail;
 extern int IC, DC;
-extern char * registersArr[], * instructionArr[];
-extern Operation operationsArr[];
-
-void CreateFiles(char *fileName)
-{
-
+static void encodeBinaryWordToFile(FILE *, char*);
+StageTwoFlags updateMemory() {
+    StageTwoFlags flag = updateSuccess;
+    BinaryWord *p = memoryHead;
+    Symbol *label;
+    char *possibleLabel;
+    int i;
+    while (p != NULL) {
+        possibleLabel = p->possibleLabel;
+        if(possibleLabel == NULL) {
+            p = p->nextWord;
+            continue;
+        }
+        if((i = lookUpTable(&symbolHashTable, possibleLabel)) == NOT_FOUND || lookUpTable(&macroHashTable, possibleLabel) != NOT_FOUND) {
+            flag = errorIllegalLabelST;
+            break;
+        } 
+        label = symbolHashTable.items[i].item;
+        if (label->attr == constant || label->attr == undefined) {
+            flag = errorIllegalLabelST;
+            break;
+        }
+        if (label->attr == external) {
+            p = p->nextWord;
+            continue;
+        }
+        insertIntoBinaryWord(p, label->value, 0, 12);
+        p = p->nextWord;
+    }
+    return flag;
 }
 
-fileFlag CreateEntryFile(char *fileName)
+fileFlag createEntryFile(char *fileName)
 {
     int i, counter = 0;
-    char *newName[strlen(fileName) + 4];
-    FILE *fp;
+    char *newName = newFileName(fileName, ".ent");
+    FILE *nfp;
     Symbol *symb;
     fileFlag flag = success;
-    strcpy(newName, fileName);
-    strcat(newName, ".ent");
-    fp = fopen(newName, "w");
-    if(fp == NULL)
+    OPEN_NEW_FILE
+    if(nfp == NULL)
         flag = errorCreatingFile;
     else
     {
@@ -29,14 +52,14 @@ fileFlag CreateEntryFile(char *fileName)
         {
             if((symb = symbolHashTable.items[i].item) != NULL)
             {
-                if(symb->entry == True)
+                if(symb->entry)
                 {
-                    fprintf(fp, "%s\t%04d\n", symb->symbol, symb->value);
+                    fprintf(nfp, "%s\t%04d\n", symb->symbol, symb->value);
                     counter++;
                 }
             }
         }
-        fclose(fp);
+        fclose(nfp);
         if(counter == 0)
         {
             i = remove(newName);
@@ -44,35 +67,39 @@ fileFlag CreateEntryFile(char *fileName)
                 flag = errorDeletingFile;
         }
     }
+    free(newName);
     return flag;
 }
 
-fileFlag CreateExternFile(char *fileName)
+fileFlag createExternFile(char *fileName)
 {
     int i, counter = 0;
-    char *newName[strlen(fileName) + 4];
-    FILE *fp;
+    char *newName =  newFileName(fileName, ".ext");
+    FILE *nfp;
     Symbol *symb;
     fileFlag flag = success;
-    strcpy(newName, fileName);
-    strcat(newName, ".ext");
-    fp = fopen(newName, "w");
-    if(fp == NULL)
+    OPEN_NEW_FILE
+    if(nfp == NULL)
         flag = errorCreatingFile;
     else
     {
         for(i = 0; i < HASHSIZE; i++)
         {
+            /*
+            Loop is wrong, it should search the memory for labels,
+            if a memory word has a label, find it in the table, check if it is
+            external, and then enter it into the file.
+            */
             if((symb = symbolHashTable.items[i].item) != NULL)
             {
                 if(symb->attr == external)
                 {
-                    fprintf(fp, "%s\t%04d\n", symb->symbol, symb->value);
+                    fprintf(nfp, "%s\t%04d\n", symb->symbol, symb->value);
                     counter++;
                 }
             }
         }
-        fclose(fp);
+        fclose(nfp);
         if(counter == 0)
         {
             i = remove(newName);
@@ -80,22 +107,57 @@ fileFlag CreateExternFile(char *fileName)
                 flag = errorDeletingFile;
         }
     }
+    free(newName);
     return flag;
 }
 
-
-
-void ConvertBinaryToBase4(Data binary) 
-{
-  char table[4] = {'0', '1', '2', '3'};
-  char result[8]; 
-  int i = 0, num = binary.value ,two_bits;
-  
-  while (num > 0) 
-  {
-    two_bits = num & 3;
-    result[i++] = table[two_bits];
-    num >>= 2;
-  }
-  result[i] = '\0'; 
+fileFlag createObFile (char *fileName) {
+    int i = 100;
+    char *newName =  newFileName(fileName, ".ob");
+    FILE *nfp;
+    fileFlag flag = success;
+    BinaryWord *p = memoryHead;
+    OPEN_NEW_FILE
+    if(nfp == NULL)
+        flag = errorCreatingFile;
+    else {
+        fprintf(nfp, "\t%d %d\n", IC,DC);
+        while (p != NULL) {
+            fprintf(nfp, "%04d\t", i);
+            encodeBinaryWordToFile(nfp, p->bits);
+            p = p->nextWord;
+            i++;
+        }
+    }
+    fclose(nfp);
+    return flag;
+}
+static void encodeBinaryWordToFile(FILE *nfp, char* bits) {
+    int i, sum;
+    for(i = 0; i < WORD_LENGTH; i+=2) {
+        sum = 0;
+        if (bits[i] == '1') {
+            sum += 2;
+        }
+        if (bits[i+1] == '1') {
+            sum += 1;
+        }
+        switch (sum) {
+            case 0:
+                putc('*',nfp);
+                break;
+            case 1:
+                putc('#',nfp);
+                break;
+            case 2:
+                putc('%',nfp);
+                break;
+            case 3:
+                putc('!',nfp);
+                break;
+            default:
+                break;
+        }
+    }
+    putc('\n',nfp);
 }

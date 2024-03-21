@@ -6,5 +6,12 @@ typedef enum
     errorDeletingFile
 } fileFlag;
 
-fileFlag CreateEntryFile(char *fileName);
-fileFlag CreateExternFile(char *fileName);
+typedef enum
+{
+    updateSuccess,
+    errorIllegalLabelST
+} StageTwoFlags;
+StageTwoFlags updateMemory();
+fileFlag createEntryFile(char *);
+fileFlag createExternFile(char *);
+fileFlag createObFile (char *);

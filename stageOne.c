@@ -5,11 +5,10 @@ extern HashTable symbolHashTable;
 extern int IC, DC;
 extern Operation operationsArr[];
 
-StageOneFlags stageOne(FILE *fp, char *fileName) {
+StageOneFlags stageOne(FILE *fp) {
     /*str1 is longer by one to make sure the ':' are in the character*/
     char line[MAX_LINE_LENGTH];
     int lineCounter = 1, possibleOpCode;
-    Symbol *symb;
     StageOneFlags contextFlag, errorFlagSO; 
     OperandsFlags opFlag;
     MemoryFlags memFlag;
@@ -74,10 +73,12 @@ StageOneFlags stageOne(FILE *fp, char *fileName) {
         lineCounter++;
     }
     updateDataLabels();
-    printSymbols();
     addDataToMemory();
-    freeSymbols();
-    freeMemory();
+    updateMemory();
+    createObFile("testOriginal");
+    printMemory();
+    printSymbols();
+    return errorFlagSO;
 }
 
 /*

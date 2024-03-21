@@ -47,7 +47,7 @@ This is the algorithm:
 PreassemblerFlags preassembler(FILE *fp, char *fileName) {
     
     /******Initializations*******/
-    char line[MAX_LINE_LENGTH], str1[MAX_LABEL_SIZE], str2[MAX_LABEL_SIZE]; 
+    char line[MAX_LINE_LENGTH], str1[MAX_LABEL_SIZE], str2[MAX_LABEL_SIZE], *newName = newFileName(fileName, ".am"); 
     /*
     Index of the macro in the table that we are defining / inserting into the file, 
     counters for error handling.
@@ -136,6 +136,7 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName) {
         /*Handle errors (step 9)*/
         errorFlagPA = errorHandlerPA(&contextFlag, errorFlagPA,lineCounter, fileName);
     }
+    free(newName);
     freeMacrosFromTable();
     fclose(nfp);
     return errorFlagPA;
