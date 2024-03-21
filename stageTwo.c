@@ -43,31 +43,36 @@ fileFlag createEntryFile(char *fileName)
     FILE *nfp;
     Symbol *symb;
     fileFlag flag = success;
-    OPEN_NEW_FILE
-    if(nfp == NULL)
-        flag = errorCreatingFile;
+    if(newName == NULL)
+        flag = failure;
     else
     {
-        for(i = 0; i < HASHSIZE; i++)
+        OPEN_NEW_FILE
+        if(nfp == NULL)
+            flag = errorCreatingFile;
+        else
         {
-            if((symb = symbolHashTable.items[i].item) != NULL)
+            for(i = 0; i < HASHSIZE; i++)
             {
-                if(symb->entry)
+                if((symb = symbolHashTable.items[i].item) != NULL)
                 {
-                    fprintf(nfp, "%s\t%04d\n", symb->symbol, symb->value);
-                    counter++;
+                    if(symb->entry)
+                    {
+                        fprintf(nfp, "%s\t%04d\n", symb->symbol, symb->value);
+                        counter++;
+                    }
                 }
             }
+            fclose(nfp);
+            if(counter == 0)
+            {
+                i = remove(newName);
+                if(i != 0)
+                    flag = errorDeletingFile;
+            }
         }
-        fclose(nfp);
-        if(counter == 0)
-        {
-            i = remove(newName);
-            if(i != 0)
-                flag = errorDeletingFile;
-        }
-    }
-    free(newName);
+        free(newName);
+    } 
     return flag;
 }
 
@@ -78,56 +83,69 @@ fileFlag createExternFile(char *fileName)
     FILE *nfp;
     Symbol *symb;
     fileFlag flag = success;
-    OPEN_NEW_FILE
-    if(nfp == NULL)
-        flag = errorCreatingFile;
+    if(newName == NULL)
+        flag = failure;
     else
     {
-        for(i = 0; i < HASHSIZE; i++)
+        OPEN_NEW_FILE
+        if(nfp == NULL)
+            flag = errorCreatingFile;
+        else
         {
-            
-            if((symb = symbolHashTable.items[i].item) != NULL)
+            for(i = 0; i < HASHSIZE; i++)
             {
-                if(symb->attr == external)
+                if((symb = symbolHashTable.items[i].item) != NULL)
                 {
-                    fprintf(nfp, "%s\t%04d\n", symb->symbol, symb->value);
-                    counter++;
+                    if(symb->attr == external)
+                    {
+                        fprintf(nfp, "%s\t%04d\n", symb->symbol, symb->value);
+                        counter++;
+                    }
                 }
             }
+            fclose(nfp);
+            if(counter == 0)
+            {
+                i = remove(newName);
+                if(i != 0)
+                    flag = errorDeletingFile;
+            }
         }
-        fclose(nfp);
-        if(counter == 0)
-        {
-            i = remove(newName);
-            if(i != 0)
-                flag = errorDeletingFile;
-        }
+        free(newName);
     }
-    free(newName);
     return flag;
 }
 
-fileFlag createObFile (char *fileName) {
+fileFlag createObFile(char *fileName) 
+{
     int i = 100;
     char *newName = newFileName(fileName, ".ob");
     FILE *nfp;
     fileFlag flag = success;
     BinaryWord *p = memoryHead;
-    OPEN_NEW_FILE
-    if(nfp == NULL)
-        flag = errorCreatingFile;
-    else {
-        fprintf(nfp, "\t%d %d\n", IC, DC);
-        while (p != NULL) {
-            fprintf(nfp, "%04d\t", i);
-            encodeBinaryWordToFile(nfp, p->bits);
-            p = p->nextWord;
-            i++;
+    if(newName == NULL)
+        flag = failure;
+    else
+    {
+        OPEN_NEW_FILE
+        if(nfp == NULL)
+            flag = errorCreatingFile;
+        else 
+        {
+            fprintf(nfp, "\t%d %d\n", IC, DC);
+            while (p != NULL) {
+                fprintf(nfp, "%04d\t", i);
+                encodeBinaryWordToFile(nfp, p->bits);
+                p = p->nextWord;
+                i++;
+            }
+            fclose(nfp);
         }
+        free(newName);
     }
-    fclose(nfp);
     return flag;
 }
+
 static void encodeBinaryWordToFile(FILE *nfp, char* bits) {
     int i, sum;
     for(i = 0; i < WORD_LENGTH; i+=2) {
