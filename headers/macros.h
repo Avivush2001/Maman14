@@ -14,6 +14,10 @@
 #define MIN_CONST -2048
 #define OPEN_NEW_FILE nfp = fopen(newName, "w");
 
+
+
+#define CHECK_CONTINUE(_condition) if(continueFlag && _condition) continueFlag = False;
+
 #define EXIT_IF(_bool) if (_bool) exit(EXIT_FAILURE);
 #define MALLOC_LINE malloc(sizeof(char) * MAX_LINE_LENGTH)
 #define MALLOC_LABEL malloc(sizeof(char) * MAX_LABEL_SIZE)

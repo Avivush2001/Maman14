@@ -51,24 +51,20 @@ This function gets data, turns it into a binary word and adds it to the data lin
 The function assumes the data inserted is correct, and in the set range.
 */
 MemoryFlags insertDataWord(Data *dataStruc) {
-    MemoryFlags dataFlag;
-    BinaryWord *dataWordd;
-    GET_MEMORY_STATUS(dataFlag)
-    dataWordd = malloc(sizeof(BinaryWord));
-    CHECK_MEMORY_ALLOC_ERROR(dataWordd, dataFlag);
-    if (dataFlag == memoryAvailable) {
-        dataWordd->bits[WORD_LENGTH] = '\0';
-        insertIntoBinaryWord(dataWordd, dataStruc->value, 0, 14);
+    INIT_BINARY_INSERTION
+    if (insertionFlag == memoryAvailable) {
+        newBinaryWord->bits[WORD_LENGTH] = '\0';
+        insertIntoBinaryWord(newBinaryWord, dataStruc->value, 0, 14);
         if (headData == NULL){
-            headData = dataWordd;
-        } else tailData->nextWord = dataWordd;
-        tailData = dataWordd;
-        dataFlag = wordCreationSuccess;
-        dataWordd->nextWord = NULL;
-        dataWordd->possibleLabel = NULL;
+            headData = newBinaryWord;
+        } else tailData->nextWord = newBinaryWord;
+        tailData = newBinaryWord;
+        insertionFlag = wordCreationSuccess;
+        newBinaryWord->nextWord = NULL;
+        newBinaryWord->possibleLabel = NULL;
         DC++;
     }
-    return dataFlag;
+    return insertionFlag;
 }
 
 /*

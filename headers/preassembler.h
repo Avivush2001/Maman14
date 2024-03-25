@@ -55,22 +55,6 @@ macro hash table. Returns a pointer to the new .am file created or returns the
 pointer to the .as file if an error occurred during the run.*/
 PreassemblerFlags preassembler(FILE*,char*);
 
-/*Checks the context of a given line.*/
-PreassemblerFlags lineContextPA(PreassemblerFlags, char *, int *);
 
-/*Checks a given field for a macro call*/
-PreassemblerFlags checkForMacroCall(char *, int *);
 
-/*Checks if a given name can be defined as a macro.*/
-PreassemblerFlags canDefineMacro(char *, int);
 
-/*Error handler. Using the context flag decide which error to display.*/
-PreassemblerFlags errorHandlerPA(PreassemblerFlags *, PreassemblerFlags, int, char *);
-
-/*Frees the macros in the table, not the table itself.
-We won't need the actual macros in the rest of the assembler's operations,
-but we will need their names for later stages.*/
-void freeMacrosFromTable();
-
-/*Recursive function to free macros and their lines.*/
-Macro *freeMacros(Macro *macptr);

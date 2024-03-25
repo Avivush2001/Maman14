@@ -24,10 +24,13 @@ else _flag = memoryAvailable;
 #define ADD_TO_MEMORY memoryTail->nextWord = newBinaryWord;\
         memoryTail = newBinaryWord;\
         IC++;
-#define INIT_BINARY_INSERTION BinaryWord *newBinaryWord;\
-    MemoryFlags insertionFlag = memoryAvailable;\
+#define INIT_BINARY_INSERTION MemoryFlags insertionFlag;\
+    BinaryWord *newBinaryWord;\
+    GET_MEMORY_STATUS(insertionFlag)\
+    if (insertionFlag == memoryAvailable){\
     newBinaryWord = malloc(sizeof(BinaryWord));\
-    CHECK_MEMORY_ALLOC_ERROR(newBinaryWord, insertionFlag)
+    EXIT_IF(newBinaryWord == NULL)\
+    }
 
 
  typedef struct BinaryWord{

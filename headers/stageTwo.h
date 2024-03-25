@@ -1,19 +1,11 @@
-typedef enum
-{
-    success,
-    failure,
-    errorCreatingFile,
-    errorDeletingFile
-} fileFlag;
+#define CHECK_ERROR_STAGE_TWO(_condition, _possibleError) if (_condition){\
+flag = errorST;\
+fprintf(stderr, _possibleError);\
+}
 
-typedef enum
-{
-    updateSuccess,
-    errorIllegalLabelST,
-    errorST,
-    allclearST
-} StageTwoFlags;
-StageTwoFlags updateMemory();
-fileFlag createEntryFile(char *);
-fileFlag createExternFile(char *);
-fileFlag createObFile (char *);
+
+Bool stageTwo(char *);
+Bool updateMemory();
+Bool createEntryFile(char *);
+Bool createExternFile(char *);
+Bool createObFile (char *);

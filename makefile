@@ -1,2 +1,2 @@
 all:	data.h assembler.c hashtable.c preassembler.c util.c memory.c stageOne.c stageOneUtil.c stageTwo.c
-	gcc -ansi -Wall -pedantic -g  data.h util.c assembler.c hashtable.c preassembler.c memory.c stageOne.c stageTwo.c stageOneUtil.c -o test.exe -lm
+	gcc -ansi -Wall -pedantic -g  data.h util.c assembler.c hashtable.c preassembler.c memory.c stageOne.c stageTwo.c stageOneUtil.c -o assembler.exe -lm

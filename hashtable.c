@@ -1,13 +1,18 @@
 #include "data.h"
 
+/*Global Assembler Tables*/
+HashTableItem macroItems[HASHSIZE];
+HashTableItem symbolItems[HASHSIZE];
+HashTable macroHashTable = {macroItems, 0, hashTableFree};
+HashTable symbolHashTable = {symbolItems, 0, hashTableFree};
+
 /*Initialize a hashtable by setting the itemCount to 0 and the flag to hashTableFree*/
-HashTable *initializeHashTable(HashTable *table) {
+void initializeHashTable(HashTable *table) {
     int i;
     ITERATE_HASHES {
         TABLE_NAME_AT(i) = "\0";
         ITEM_AT_INDEX = NULL;
     }
-    return table;
 }
 /*The function Generates a key by summing up the characters in the string*/
 int generateKey(char *name) {
@@ -82,12 +87,11 @@ int insertToTable(HashTable *table, char *name) {
 
 /*Frees hashtable items' names. It's the responsibility of other functions to 
 free the pointer and its contents.*/
-HashTable *freeTableNames(HashTable *table) {
+void freeTableNames(HashTable *table) {
     int i;
     char* name;
     ITERATE_HASHES {
         if (*(name = TABLE_NAME_AT(i)) != '\0')
             free(name);
     }
-    return table;
 }

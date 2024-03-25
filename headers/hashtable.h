@@ -25,7 +25,7 @@ typedef struct {
 
 
 /*Initialize a hashtable*/
-HashTable *initializeHashTable(HashTable*);
+void initializeHashTable(HashTable*);
 
 /*Generate a key for the hash function.*/
 int generateKey(char*);
@@ -41,4 +41,4 @@ int insertToTable(HashTable*, char*);
 
 /*Frees hashtable items' names. It's the responsibility of other functions to 
 free the pointer and its contents.*/
-HashTable *freeTableNames(HashTable*);
+void freeTableNames(HashTable*);

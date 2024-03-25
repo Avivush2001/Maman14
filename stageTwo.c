@@ -1,173 +1,167 @@
 #include "data.h"
 
 
-extern HashTable symbolHashTable, macroHashTable;
+extern HashTable symbolHashTable;
 extern BinaryWord *memoryHead, *memoryTail;
 extern int IC, DC;
 static void encodeBinaryWordToFile(FILE *, char*);
 
-StageTwoFlags stageTwo(char *fileName)
+Bool stageTwo(char *fileName)
 {
-    StageTwoFlags flag = allclearST, temp = updateMemory();
-    if(temp != updateSuccess)
-        flag = errorST;
-    else
-    {
-        if((temp = createObFile(fileName)) != success)
-            flag = errorST;
-        if((temp = createEntryFile(fileName)) != success)
-            flag = errorST;
-        if((temp = createExternFile(fileName)) != success)
-            flag = errorST;
-    }
+    Bool flag = updateMemory();
+    if(flag)
+        flag = createObFile(fileName);
+    if(flag)
+        flag = createEntryFile(fileName);
+    if(flag)
+        flag = createEntryFile(fileName);
+    freeSymbols();
     return flag;
 }
 
-StageTwoFlags updateMemory() {
-    StageTwoFlags flag = updateSuccess;
+Bool updateMemory() {
+    Bool flag = True;
     BinaryWord *p = memoryHead;
     Symbol *label;
     char *possibleLabel;
-    int i;
+    int i, lineCounter = 1;
     while (p != NULL) {
         possibleLabel = p->possibleLabel;
         if(possibleLabel == NULL) {
             p = p->nextWord;
+            lineCounter++;
             continue;
         }
-        if((i = lookUpTable(&symbolHashTable, possibleLabel)) == NOT_FOUND || lookUpTable(&macroHashTable, possibleLabel) != NOT_FOUND) {
-            flag = errorIllegalLabelST;
-            break;
+        if((i = lookUpTable(&symbolHashTable, possibleLabel)) == NOT_FOUND) {
+            flag = False;
+            PRINT_ERROR("Second", "Unknown Label\n")
+            continue;;
         } 
         label = symbolHashTable.items[i].item;
         if (label->attr == constant || label->attr == undefined) {
-            flag = errorIllegalLabelST;
-            break;
+            flag = False;
+            PRINT_ERROR("Second", "Undefined Entry Label, or used a constant\n")
+            continue;
         }
         if (label->attr == external) {
             p = p->nextWord;
+            lineCounter++;
             continue;
         }
         insertIntoBinaryWord(p, label->value, 0, 12);
         p = p->nextWord;
+        lineCounter++;
     }
     return flag;
 }
 
-fileFlag createEntryFile(char *fileName)
+Bool createEntryFile(char *fileName)
 {
     int i, counter = 0;
     char *newName = newFileName(fileName, ".ent");
     FILE *nfp;
     Symbol *symb;
-    fileFlag flag = success;
-    if(newName == NULL)
-        flag = failure;
+    Bool flag = True;
+    OPEN_NEW_FILE
+    if(nfp == NULL) {
+        flag = False;
+        fprintf(stderr,"Failed to create entry file for %s\n", fileName);
+    }
     else
     {
-        OPEN_NEW_FILE
-        if(nfp == NULL)
-            flag = errorCreatingFile;
-        else
+        for(i = 0; i < HASHSIZE; i++)
         {
-            for(i = 0; i < HASHSIZE; i++)
+            if((symb = symbolHashTable.items[i].item) != NULL)
             {
-                if((symb = symbolHashTable.items[i].item) != NULL)
+                if(symb->entry)
                 {
-                    if(symb->entry)
-                    {
-                        fprintf(nfp, "%s\t%04d\n", symb->symbol, symb->value);
-                        counter++;
-                    }
+                    fprintf(nfp, "%s\t%04d\n", symb->symbol, symb->value);
+                    counter++;
                 }
             }
-            fclose(nfp);
-            if(counter == 0)
-            {
-                i = remove(newName);
-                if(i != 0)
-                    flag = errorDeletingFile;
-            }
         }
-        free(newName);
-    } 
+        fclose(nfp);
+        if(!counter)
+        {
+            if(remove(newName)) 
+                fprintf(stderr,"Failed to delete empty entry file for %s\n", fileName);
+            
+        }
+    }
+    free(newName);
+    
     return flag;
 }
 
-fileFlag createExternFile(char *fileName)
+Bool createExternFile(char *fileName)
 {
     int i, counter = 100;
     char *newName =  newFileName(fileName, ".ext"), *possibleLabel;
     FILE *nfp;
     Symbol *label;
-    fileFlag flag = success;
+    Bool flag = True;
     BinaryWord *p = memoryHead;
-    if(newName == NULL)
-        flag = failure;
+    OPEN_NEW_FILE
+    if(nfp == NULL) {
+        flag = False;
+        fprintf(stderr,"Failed to create extern file for %s\n", fileName);
+    }
     else
     {
-        OPEN_NEW_FILE
-        if(nfp == NULL)
-            flag = errorCreatingFile;
-        else
+        while (p != NULL) 
         {
-            while (p != NULL) 
+            possibleLabel = p->possibleLabel;
+            if(possibleLabel == NULL) 
             {
-                possibleLabel = p->possibleLabel;
-                if(possibleLabel == NULL) 
-                {
-                    p = p->nextWord;
-                    counter++;
-                    continue;
-                }
-                i = lookUpTable(&symbolHashTable, possibleLabel);
-                label = symbolHashTable.items[i].item;
-                if (label->attr == external) 
-                    fprintf(nfp, "%s\t%04d\n", possibleLabel, counter);
                 p = p->nextWord;
                 counter++;
+                continue;
             }
-            fclose(nfp);
-            if(counter == 100)
-            {
-                i = remove(newName);
-                if(i != 0)
-                    flag = errorDeletingFile;
-            }
+            i = lookUpTable(&symbolHashTable, possibleLabel);
+            label = symbolHashTable.items[i].item;
+            if (label->attr == external) 
+                fprintf(nfp, "%s\t%04d\n", possibleLabel, counter);
+            p = p->nextWord;
+            counter++;
         }
-        free(newName);     
+        fclose(nfp);
+        if(counter == 100)
+        {
+            if(remove(newName)) 
+                fprintf(stderr,"Failed to delete empty extern file for %s\n", fileName);
+            
+        }
     }
+    free(newName);     
+    
     return flag;
 }
 
-fileFlag createObFile(char *fileName) 
+Bool createObFile(char *fileName) 
 {
     int i = 100;
     char *newName = newFileName(fileName, ".ob");
     FILE *nfp;
-    fileFlag flag = success;
+    Bool flag = True;
     BinaryWord *p = memoryHead;
-    if(newName == NULL)
-        flag = failure;
-    else
-    {
-        OPEN_NEW_FILE
-        if(nfp == NULL)
-            flag = errorCreatingFile;
-        else 
-        {
-            fprintf(nfp, "\t%d %d\n", IC, DC);
-            while (p != NULL) {
-                fprintf(nfp, "%04d\t", i);
-                encodeBinaryWordToFile(nfp, p->bits);
-                p = p->nextWord;
-                i++;
-            }
-            fclose(nfp);
+    OPEN_NEW_FILE
+    if(nfp == NULL) {
+        flag = False;
+        fprintf(stderr,"Failed to create ob file for %s\n", fileName);
+    } else {
+        fprintf(nfp, "\t%d %d\n", IC, DC);
+        while (p != NULL) {
+            fprintf(nfp, "%04d\t", i);
+            encodeBinaryWordToFile(nfp, p->bits);
+            p = p->nextWord;
+            i++;
         }
-        free(newName);
+        fclose(nfp);
     }
+    
+    free(newName);
     return flag;
+    
 }
 
 static void encodeBinaryWordToFile(FILE *nfp, char* bits) {

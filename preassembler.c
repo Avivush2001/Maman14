@@ -1,5 +1,24 @@
 #include "data.h"
 extern HashTable macroHashTable;
+
+/*Frees the macros in the table, not the table itself.
+We won't need the actual macros in the rest of the assembler's operations,
+but we will need their names for later stages.*/
+static void freeMacrosFromTable();
+
+/*Recursive function to free macros and their lines.*/
+static Macro *freeMacros(Macro *macptr);
+/*Checks the context of a given line.*/
+static PreassemblerFlags lineContextPA(PreassemblerFlags, char *, int *);
+
+/*Checks a given field for a macro call*/
+static PreassemblerFlags checkForMacroCall(char *, int *);
+
+/*Checks if a given name can be defined as a macro.*/
+static PreassemblerFlags canDefineMacro(char *, int);
+
+/*Error handler. Using the context flag decide which error to display.*/
+static PreassemblerFlags errorHandlerPA(PreassemblerFlags *, PreassemblerFlags, int, char *);
 /*
 Instructions for macros and the pre assembler:
 -No nested macro definitions and no need to check for them.
@@ -64,9 +83,6 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName) {
     /*Pointers to the current macro item in the list and to the next one*/
     Macro *macptr, *nextMac;
 
-    /*Create the .am file.*/
-    OPEN_NEW_FILE
-
     /*Flag setups*/
     DEFAULT_CONTEXT_PA;
     errorFlagPA = allclearPA;
@@ -75,8 +91,15 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName) {
     lineCounter = 1;
     indexOfMacro = NOT_FOUND;
 
+    /*Create the .am file.*/
+    OPEN_NEW_FILE
+    if(nfp == NULL) {
+        contextFlag = errorEncounteredPA;
+        errorFlagPA = contextFlag;
+        fprintf(stderr,"Failed to create am file for %s\n", fileName);
+    }
     /*Main loop (step 1)*/
-    while(fgets(line, MAX_LINE_LENGTH, fp) != NULL) {
+    while(fgets(line, MAX_LINE_LENGTH, fp) != NULL && contextFlag != errorEncounteredPA) {
 
         /*Reading the first two fields (step 2)*/
         stringCounter = READ_FIRST_TWO_FIELDS;
@@ -136,9 +159,13 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName) {
         /*Handle errors (step 9)*/
         errorFlagPA = errorHandlerPA(&contextFlag, errorFlagPA,lineCounter, fileName);
     }
+    if(contextFlag != errorEncounteredPA) {
+        fclose(nfp);
+        if (errorFlagPA == errorEncounteredPA)
+            remove(newName);
+        freeMacrosFromTable();
+    }
     free(newName);
-    freeMacrosFromTable();
-    fclose(nfp);
     return errorFlagPA;
 }
 
@@ -148,7 +175,7 @@ skipMacroDefinition, readingLinePA, macroDefinitionOngoing.
 Using the flag and the first field we got earlier, it returns a new flag,
 and if it found a macro call indexOfMacro will be updated to that index.
 */
-PreassemblerFlags lineContextPA(PreassemblerFlags currentFlag, char *str1, int *indexOfMacro) {
+static PreassemblerFlags lineContextPA(PreassemblerFlags currentFlag, char *str1, int *indexOfMacro) {
     PreassemblerFlags newFlag;
     newFlag = currentFlag;
     switch (currentFlag) {
@@ -180,7 +207,7 @@ PreassemblerFlags lineContextPA(PreassemblerFlags currentFlag, char *str1, int *
 /*The function tries to find the macro in the table. If it found it, the flag will be
 macroCall. If it didn't find it, but the label is legal (meaning it is a viable macro name)
 then this is an undefined macro call, so skip it. otherwise add the line*/
-PreassemblerFlags checkForMacroCall(char *field, int *indexOfMacro) {
+static PreassemblerFlags checkForMacroCall(char *field, int *indexOfMacro) {
     PreassemblerFlags newFlag;
     if ((*indexOfMacro = lookUpTable(&macroHashTable, field)) != NOT_FOUND) newFlag = macroCall;
     else if (isLabelLegal(field)) newFlag = skipUndefinedMacro;
@@ -192,7 +219,7 @@ PreassemblerFlags checkForMacroCall(char *field, int *indexOfMacro) {
 /*Check for possible error before defining a macro.
 Possible errors are:
 no macro name given, label isn't legal, hashtable is full, macro name already in the table.*/
-PreassemblerFlags canDefineMacro(char *macroName, int stringCount) {
+static PreassemblerFlags canDefineMacro(char *macroName, int stringCount) {
     PreassemblerFlags newFlag;
     newFlag = macroDefinitionStarted;
 
@@ -213,7 +240,7 @@ PreassemblerFlags canDefineMacro(char *macroName, int stringCount) {
 }
 
 /*Error handler. Using the context flag decide which error to display.*/
-PreassemblerFlags errorHandlerPA(PreassemblerFlags *contextFlag, PreassemblerFlags errorFlag, int lineCounter, char *fileName) {
+static PreassemblerFlags errorHandlerPA(PreassemblerFlags *contextFlag, PreassemblerFlags errorFlag, int lineCounter, char *fileName) {
     PreassemblerFlags newFlag;
     newFlag = errorFlag;
     switch (*contextFlag) {
@@ -230,7 +257,7 @@ PreassemblerFlags errorHandlerPA(PreassemblerFlags *contextFlag, PreassemblerFla
 /*Frees the macros in the taBle, not the tAble itself.
 We won't need the actual macRos in the rest of the Assembler's operations,
 but we will need to checK their names for later stages.*/
-void freeMacrosFromTable() {
+static void freeMacrosFromTable() {
     int indexOfMacro;
     Macro *macptr;
     for (indexOfMacro = 0; indexOfMacro < HASHSIZE; indexOfMacro++) {
@@ -243,7 +270,7 @@ void freeMacrosFromTable() {
 }
 
 /*Recursive function to free macros and their lines.*/
-Macro *freeMacros(Macro *macptr) {
+static Macro *freeMacros(Macro *macptr) {
     char *line;
     Macro *nextMac;
     line = macptr->line;

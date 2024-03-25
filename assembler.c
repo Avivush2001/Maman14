@@ -2,13 +2,9 @@
 
 
 /*Global Assembler Tables*/
-HashTableItem macroItems[HASHSIZE];
-HashTableItem symbolItems[HASHSIZE];
-HashTable macroHashTable = {macroItems, 0, hashTableFree};
-HashTable symbolHashTable = {symbolItems, 0, hashTableFree};
+extern HashTable symbolHashTable, macroHashTable;
 
-int main() {
-    /*Can't be initialized another way besides allocating memory.*/
+/* int main() {
     
     FILE *fp;
     PreassemblerFlags flagPA;
@@ -25,6 +21,46 @@ int main() {
     fclose(fp);
     freeTableNames(&macroHashTable);
     freeTableNames(&symbolHashTable);
+    return 0;
+} */
+int main(int argc, char **argv) {
+    FILE *fp;
+    char *fileName, *ogFileName;
+    Bool continueFlag;
+    if (argc == 1) {
+        fprintf(stderr, "No arguments were given\n");
+        exit(1);
+    }
+    while (argc != 1) {
+        initializeMemory();
+        continueFlag = True;
+        ogFileName = argv[argc-1];
+        initializeHashTable(&macroHashTable);
+        initializeHashTable(&symbolHashTable);
+
+        fileName = newFileName(ogFileName, ".as");
+        fp = fopen(fileName, "r");
+        CHECK_CONTINUE((preassembler(fp, ogFileName) != allclearPA))
+        free(fileName);
+        fclose(fp);
+
+        if(continueFlag) {
+            fileName = newFileName(ogFileName, ".am");
+            fp = fopen(fileName, "r");
+            free(fileName);
+            CHECK_CONTINUE((stageOne(fp) != allclearSO))
+            fclose(fp);
+        }
+        if (continueFlag) {
+            CHECK_CONTINUE((!stageTwo(ogFileName)))
+        }
+        if (continueFlag)
+            fprintf(stdout, "%s successfully assembled! Continuing to next file...\n", ogFileName);
+        argc--;
+        freeTableNames(&macroHashTable);
+        freeTableNames(&symbolHashTable);
+    }
+    fprintf(stdout, "Assembler operation finished...\n");
     return 0;
 }
 

@@ -288,10 +288,9 @@ char *newFileName(char *fname, char *suffix)
     nameSize = strlen(fname);
     suffixSize = strlen(suffix);
     p = malloc(sizeof(char) * (nameSize + suffixSize + 1));
-    if(p != NULL)
-    {
-        p = strcpy(p, fname);
-        p = strcat(p, suffix);
-    }
+    EXIT_IF(p == NULL)
+    p = strcpy(p, fname);
+    p = strcat(p, suffix);
+    
     return p;
 }
