@@ -98,7 +98,7 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
     
     OperandsFlags flag = legal1Operand;
     char *token;
-    const char *delimiter = " , \n";
+    const char *delimiter = " , \n \r";
     int i, operandCounter = 0;
     token = strtok(str, delimiter);
 

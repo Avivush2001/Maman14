@@ -14,7 +14,7 @@ Bool stageTwo(char *fileName)
     if(flag)
         flag = createEntryFile(fileName);
     if(flag)
-        flag = createEntryFile(fileName);
+        flag = createExternFile(fileName);
     freeSymbols();
     return flag;
 }

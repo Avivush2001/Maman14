@@ -6,7 +6,7 @@ extern int IC, DC;
 extern Operation operationsArr[];
 
 StageOneFlags stageOne(FILE *fp) {
-    /*str1 is longer by one to make sure the ':' are in the character*/
+
     char line[MAX_LINE_LENGTH];
     int lineCounter = 1, possibleOpCode;
     StageOneFlags contextFlag, errorFlagSO; 
@@ -74,6 +74,8 @@ StageOneFlags stageOne(FILE *fp) {
     }
     updateDataLabels();
     addDataToMemory();
+    printMemory();
+    printSymbols();
     return errorFlagSO;
 }
 
@@ -103,7 +105,7 @@ StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
     char str1[MAX_LABEL_SIZE+1], str2[MAX_LABEL_SIZE], str3[MAX_LABEL_SIZE];
     /*Get strings*/
     stringsCounter = sscanf(line, "%32s %31s, %31s", str1, str2, str3);
-    if (!stringsCounter) contextFlag = skipLine;/*Check for empty line*/
+    if (stringsCounter == -1) contextFlag = skipLine;/*Check for empty line*/
     else if (*str1 == ';') contextFlag = skipLine;/*Check for comment line*/
     else{
         /*Checking if the first string can be a legal label*/
@@ -357,7 +359,7 @@ Then it uses strtok to read as many tokens as there are, check their legality an
 them as data to the memory.
 */
 StageOneFlags insertData(char *line) {
-    const char *delimiter = " , \n";
+    const char *delimiter = " , \n \r";
     char *p = strchr(line,'.') + 5, *token;
     Bool flagNoComma = False, commaFlag = True;
     StageOneFlags flag = allclearSO;
