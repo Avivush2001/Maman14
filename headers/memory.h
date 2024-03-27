@@ -80,18 +80,7 @@ Assumes the data is correct and in the set range.
 */
 MemoryFlags insertDataWord(Data *);
 
-/*
-These next 4 functions Work basically the same. The needed to be different to handle different types of input.
-Create a new binary word for each type of addressing
-*/
 
-MemoryFlags insertOpBin(int, int, int);
-
-MemoryFlags insertConstBin(unsigned);
-
-MemoryFlags insertAddressBin(char *);
-
-MemoryFlags insertRegisterBin(int, int);
 
 /*
 The function gets the word, unsigned data, an index from which we will insert into the Binary word,
@@ -99,9 +88,5 @@ And the number of bits of the unsigned data's bit field.
 */
 void insertIntoBinaryWord(BinaryWord *, unsigned, int, int);
 
-/*
-Checks if we have enough memory to perform an operation insertion.
-*/
-MemoryFlags getInsertionFlag(Field *, Field *);
 
 void printMemory();

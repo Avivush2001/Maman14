@@ -3,9 +3,6 @@ flag = errorST;\
 fprintf(stderr, _possibleError);\
 }
 
-
+/*Main Stage Two Function*/
 Bool stageTwo(char *);
-Bool updateMemory();
-Bool createEntryFile(char *);
-Bool createExternFile(char *);
-Bool createObFile (char *);
+

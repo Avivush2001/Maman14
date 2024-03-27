@@ -163,8 +163,8 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName) {
         fclose(nfp);
         if (errorFlagPA == errorEncounteredPA)
             remove(newName);
-        freeMacrosFromTable();
     }
+    freeMacrosFromTable();
     free(newName);
     return errorFlagPA;
 }
@@ -210,7 +210,7 @@ then this is an undefined macro call, so skip it. otherwise add the line*/
 static PreassemblerFlags checkForMacroCall(char *field, int *indexOfMacro) {
     PreassemblerFlags newFlag;
     if ((*indexOfMacro = lookUpTable(&macroHashTable, field)) != NOT_FOUND) newFlag = macroCall;
-    else if (isLabelLegal(field)) newFlag = skipUndefinedMacro;
+    else if (isValidSymbol(field)) newFlag = skipUndefinedMacro;
     else newFlag = addLine;
     
     return newFlag;
@@ -226,7 +226,7 @@ static PreassemblerFlags canDefineMacro(char *macroName, int stringCount) {
     if (stringCount != 2) 
         newFlag = errorNoMacroNameGiven;
 
-    else if (!isLabelLegal(macroName)) 
+    else if (!isValidSymbol(macroName)) 
         newFlag = errorMacroNameIllegal;
 
     else if (macroHashTable.flag == hashTableFull) 

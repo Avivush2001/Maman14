@@ -4,8 +4,27 @@
 extern HashTable symbolHashTable;
 extern BinaryWord *memoryHead, *memoryTail;
 extern int IC, DC;
+
+/*Encodes a binary word and inserts it in the OB file.*/
 static void encodeBinaryWordToFile(FILE *, char*);
 
+/*Updates the memory and checks for undefined labels.*/
+static Bool updateMemory();
+
+/*Create an entries file.*/
+static Bool createEntryFile(char *);
+
+/*Create an externals file.*/
+static Bool createExternFile(char *);
+
+/*Create the ob file.*/
+static Bool createObFile (char *);
+
+/*
+Main stage two function, pretty un-complex
+compared to the other main function. It just
+start each step and makes sure each step passed.
+*/
 Bool stageTwo(char *fileName)
 {
     Bool flag = updateMemory();
@@ -15,11 +34,10 @@ Bool stageTwo(char *fileName)
         flag = createEntryFile(fileName);
     if(flag)
         flag = createExternFile(fileName);
-    freeSymbols();
     return flag;
 }
 
-Bool updateMemory() {
+static Bool updateMemory() {
     Bool flag = True;
     BinaryWord *p = memoryHead;
     Symbol *label;
@@ -34,14 +52,14 @@ Bool updateMemory() {
         }
         if((i = lookUpTable(&symbolHashTable, possibleLabel)) == NOT_FOUND) {
             flag = False;
-            PRINT_ERROR("Second", "Unknown Label\n")
+            PRINT_ERROR("Second", "Unknown Label at this address!\n")
             p = p->nextWord;
             continue;
         } 
         label = symbolHashTable.items[i].item;
         if (label->attr == constant || label->attr == undefined) {
             flag = False;
-            PRINT_ERROR("Second", "Undefined Entry Label, or used a constant\n")
+            PRINT_ERROR("Second", "Undefined Entry Label, or used a constant at this address!\n")
             p = p->nextWord;
             continue;
         }
@@ -57,7 +75,7 @@ Bool updateMemory() {
     return flag;
 }
 
-Bool createEntryFile(char *fileName)
+static Bool createEntryFile(char *fileName)
 {
     int i, counter = 0;
     char *newName = newFileName(fileName, ".ent");
@@ -95,7 +113,7 @@ Bool createEntryFile(char *fileName)
     return flag;
 }
 
-Bool createExternFile(char *fileName)
+static Bool createExternFile(char *fileName)
 {
     int i, counter = 100;
     char *newName =  newFileName(fileName, ".ext"), *possibleLabel;
@@ -139,7 +157,7 @@ Bool createExternFile(char *fileName)
     return flag;
 }
 
-Bool createObFile(char *fileName) 
+static Bool createObFile(char *fileName) 
 {
     int i = 100;
     char *newName = newFileName(fileName, ".ob");

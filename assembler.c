@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
         ogFileName = argv[argc-1];
         initializeHashTable(&macroHashTable);
         initializeHashTable(&symbolHashTable);
-
+        printf("%s assembly started...\n", ogFileName);
         fileName = newFileName(ogFileName, ".as");
         fp = fopen(fileName, "r");
         CHECK_CONTINUE((preassembler(fp, ogFileName) != allclearPA))
@@ -55,12 +55,14 @@ int main(int argc, char **argv) {
             CHECK_CONTINUE((!stageTwo(ogFileName)))
         }
         if (continueFlag)
-            fprintf(stdout, "%s successfully assembled! Continuing to next file...\n", ogFileName);
+            printf("%s successfully assembled! Continuing to next file...\n", ogFileName);
+        else printf("%s failed assembly! Continuing to next file...\n", ogFileName);
         argc--;
+        freeSymbols();
         freeTableNames(&macroHashTable);
         freeTableNames(&symbolHashTable);
     }
-    fprintf(stdout, "Assembler operation finished...\n");
+    printf("Assembler operation finished!\n");
     return 0;
 }
 

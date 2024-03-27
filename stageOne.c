@@ -5,6 +5,35 @@ extern HashTable symbolHashTable;
 extern int IC, DC;
 extern Operation operationsArr[];
 
+/*
+It gets the a pointer to the line and to an integer to possibly store 
+the opcode of the operation in the line. In the end it returns a flag, and inserts labels when encountered.
+*/
+static StageOneFlags lineContextSO(char *, int *);
+
+/*
+This function defines an external or entry label. It gets the line and
+if it is an entry call, handles the definition, and returns a flag.
+*/
+static StageOneFlags defineExternOrEntryLabel(char *, Bool);
+
+/*This functions gets the line and defines a constant.*/
+static StageOneFlags defineConstant(char *);
+
+/*Inserts string from the line to the memory.*/
+static StageOneFlags insertStringToMemory(const char *);
+
+/*Inserts data from the line to the memory.*/
+static StageOneFlags insertData(char *);
+
+/*
+This is the main stage one function. It gets the file, and starts reading each line.
+It first gets the context of the line and defines labels if there is one.
+than based on the context it will: define an entry/external label or constant,
+insert to the memory data or string, or insert to the memory
+an operation an its operands.
+If an error occurs the loop breaks.
+*/
 StageOneFlags stageOne(FILE *fp) {
 
     char line[MAX_LINE_LENGTH];
@@ -12,14 +41,19 @@ StageOneFlags stageOne(FILE *fp) {
     StageOneFlags contextFlag, errorFlagSO; 
     OperandsFlags opFlag;
     MemoryFlags memFlag;
-    initializeMemory();
     DEFAULT_CONTEXT_SO
     errorFlagSO = allclearSO;
+    /*Main loop to get the line*/
     while(fgets(line, MAX_LINE_LENGTH, fp) != NULL && errorFlagSO != errorEncounteredSO) {
+        /*
+        Set up 2 fields. No need to malloc extra memory for them
+        since they won't be needed to be saved, just their values.
+        */
         Field field1 = {immediate,NULL,0 }, field2 = {immediate,NULL,0 };
         possibleOpCode = NOT_FOUND;
         opFlag = notReadOperands;
         memFlag = memoryAvailable;
+        /*Get the line context*/
         contextFlag = lineContextSO(line, &possibleOpCode);
         switch(contextFlag) {
             case entryDefinition:
@@ -32,6 +66,15 @@ StageOneFlags stageOne(FILE *fp) {
                 contextFlag = defineConstant(line);
                 break;
             case isOperation:
+                /*
+                First it sets up the operands, checking if they are legal,
+                and counts them. Then based on that count we check
+                the the number of fields enabled for the given operation,
+                and the same for the fields' types.
+                If all goes well it will insert the operation and the operands
+                to the memory. The memory function assumes all the information
+                above is correct, and that the field pointers were inserted correctly.
+                */
                 opFlag = areLegalOperands(strstr(line, operationsArr[possibleOpCode].name)+3, &field1, &field2);
                 switch (opFlag) {
                     case noOperands:
@@ -48,7 +91,7 @@ StageOneFlags stageOne(FILE *fp) {
                             contextFlag = errorOperandTypes;
                         }
                         break;
-                    case legal2Operands:
+                    case legal2Operand:
                         if (operationsArr[possibleOpCode].fields == 2 && operationsArr[possibleOpCode].allowedSrc[field1.type] && operationsArr[possibleOpCode].allowedDst[field2.type]) {
                             memFlag = insertOperation(possibleOpCode, &field1, &field2);
                         } else {
@@ -69,13 +112,12 @@ StageOneFlags stageOne(FILE *fp) {
             default:
                 break;
         }
+        /*Handle errors and advance the line counter.*/
         errorFlagSO = errorHandlerSO(contextFlag, memFlag, opFlag, lineCounter);
         lineCounter++;
     }
-    updateDataLabels();
     addDataToMemory();
-    printMemory();
-    printSymbols();
+    updateDataLabels();
     return errorFlagSO;
 }
 
@@ -97,7 +139,7 @@ Then we check for errors and if we entered a symbol.
 If we did, check the second string for instructions or an operation and change the flag accordingly.
 If no symbol entered, we do basically the same but for the second String
 */
-StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
+static StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
     int i, stringsCounter;
     Symbol *symb = NULL;
     HashTableItem *symbolItem;
@@ -115,6 +157,8 @@ StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
             if (i != NOT_FOUND) {
                 symbolItem = symbolHashTable.items + i;
                 symb = symbolItem->item;
+                if (symb->attr != undefined) 
+                    contextFlag = errorDefinedEntryLabel;
             } else {
                 /*Inserting a new label*/
                 i = insertToTable(&symbolHashTable, str1);
@@ -201,7 +245,7 @@ Look it up in the table, if it isn't found check if it is legal and insert it.
 If it is found, incase it is already an entry print a warning, if not turn the isEntry flag on.
 If it is found and it is defining an external label, and it is already external print a warning, if not change the flag to an error.
 */
-StageOneFlags defineExternOrEntryLabel(char *line, Bool isEntry) 
+static StageOneFlags defineExternOrEntryLabel(char *line, Bool isEntry) 
 {
     char *p, label[MAX_LABEL_SIZE], garbage[2];
     StageOneFlags flag = allclearSO;
@@ -264,7 +308,7 @@ the equals character and the constant itself, and leftover graphical characters.
 
 It checks if the parameters are legal, inserting the constant to the table and initializing it. 
 */
-StageOneFlags defineConstant(char *line) {
+static StageOneFlags defineConstant(char *line) {
     char *p = strchr(line, '.') + 7, str1[MAX_LABEL_SIZE], str2[MAX_LABEL_SIZE], str3[MAX_LABEL_SIZE] ,garbage[2];
     StageOneFlags flag;
     int i;
@@ -291,13 +335,20 @@ StageOneFlags defineConstant(char *line) {
             symbolHashTable.items[i].item = symb;
             flag = allclearSO;
         } else {
-            flag = errorIllegalSymbolOrTableFull;
+            if (i == NOT_FOUND) flag = errorSymbolHashTableFull;
+            if (!value.isNum || !IN_CONST_RANGE(value.result)) flag = errorIllegalConstant;
         }
     }
     return flag;
 }
 
-StageOneFlags insertStringToMemory(const char *str)
+/*
+The function take the line, skips to after the .string keyword,
+checks the brackets and the rest of the line, if it is fine,
+it reads the string between the brackets, by reading each char,
+putting it in a data structure and inserting it to the memory
+*/
+static StageOneFlags insertStringToMemory(const char *str)
 {
     StageOneFlags flag = legalString;
     MemoryFlags memFlag;
@@ -358,7 +409,7 @@ The function skips the instruction, checks if there are commas and if their plac
 Then it uses strtok to read as many tokens as there are, check their legality and insert
 them as data to the memory.
 */
-StageOneFlags insertData(char *line) {
+static StageOneFlags insertData(char *line) {
     const char *delimiter = " , \n \r";
     char *p = strchr(line,'.') + 5, *token;
     Bool flagNoComma = False, commaFlag = True;
@@ -412,4 +463,6 @@ StageOneFlags insertData(char *line) {
     }
     return flag;
 }
+
+
 

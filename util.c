@@ -1,7 +1,6 @@
 #include "data.h"
 
-/*Can't be initialized another way besides allocating memory.*/
-/*Holds the operations. Also each index represents each operation's opcode*/
+/*Holds the operations. Also each index represents each operation's opcode.*/
 Operation operationsArr[] = {
     {
         "mov",
@@ -110,6 +109,9 @@ If it is 'index' is updated. If not index stays NOT_FOUND. Returns the index.
 */
 static int findInStringArray(char*, char**, int);
 
+/*Checks if a string is a preserved word*/
+static Bool isPreservedWord(char*);
+
 static int findInStringArray(char* word, char *arr[], int size) {
     int in, i;
     in = NOT_FOUND;
@@ -121,6 +123,8 @@ static int findInStringArray(char* word, char *arr[], int size) {
     }
     return in;
 }
+
+/*Look for an operation and return its index if found*/
 int findOperation(char* word) {
     int in, i;
     in = NOT_FOUND;
@@ -133,12 +137,16 @@ int findOperation(char* word) {
     return in;
 }
 
+/*Look for a register and return its index if found*/
 int findRegister(char* word) {
     return findInStringArray(word, registersArr, REGISTERS_SIZE);
 }
+
+/*Look for an instruction and return its index if found*/
 int findInstruction(char* word) {
      return findInStringArray(word, instructionArr, INSTRUCTIONS_SIZE);
 } 
+
 /*
 Given a string the function checks if it can Be a legal label.
 It first checks if the word is either: 
@@ -153,7 +161,7 @@ In the end ans is returned.
 NOTE: the string must not include ':' at the end
 and doesn't check any label / macro hashtable.
 */
-Bool isLabelLegal(char *label) {
+Bool isValidSymbol(char *label) {
     Bool ans;
     int i, size;
     size = strlen(label);
@@ -175,7 +183,7 @@ Given a string, it checks if it is present in one of the reserved word arrays.
 If it is 'ans' is changed to False.
 In the end ans is returned.
 */
-Bool isPreservedWord(char *label) {
+static Bool isPreservedWord(char *label) {
     Bool ans;
     ans = False;
     if (findOperation(label) != NOT_FOUND) ans = True;
@@ -228,6 +236,11 @@ wholeNum string_to_int(const char *str)
   return num;
 }
 
+/*
+Check if a string is a legal array by checking the label
+and the brackets if they can be a label \ constant \ integer using
+other functions in the utilities.
+*/
 Bool isLegalArray(const char *str)
 {
     Bool flag = True;
@@ -257,7 +270,7 @@ Bool isLegalArray(const char *str)
             i = size - strlen(left);
             strncpy(temp, str, i);
             temp[i] = '\0';
-            if(isLabelLegal(temp) == False)
+            if(isValidSymbol(temp) == False)
                 flag = False;
             
             else
@@ -272,7 +285,7 @@ Bool isLegalArray(const char *str)
                     i = size - strlen(right);
                     strncpy(temp, left, i);
                     temp[i] = '\0';
-                    if(isLabelLegal(temp) == False && string_to_int(temp).isNum == False)
+                    if(isValidSymbol(temp) == False && string_to_int(temp).isNum == False)
                         flag = False;
                 }
             }
@@ -280,7 +293,7 @@ Bool isLegalArray(const char *str)
     }
     return flag;
 }
-
+/*Create a new file name with a given suffix.*/
 char *newFileName(char *fname, char *suffix) 
 {
     char *p;

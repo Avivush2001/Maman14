@@ -26,6 +26,30 @@
 flag = errorEncounteredSO;\
 break;
 
+#define BREAK_WITH_FLAG(_flag) flag = _flag;\
+                        operandCounter = NOT_FOUND;\
+                        break;
+
+#define SETUP_FIELD_CONSTANT(_num) field##_num ->symbol = NULL;\
+                    field##_num ->type = immediate;\
+                    field##_num->value = value;\
+                    flag = legal##_num##Operand;
+
+#define SETUP_FIELD_LABEL(_num)field##_num ->symbol = label;\
+                    field##_num ->type = direct;\
+                    field##_num ->value = 0;\
+                    flag = legal##_num##Operand;
+
+#define SETUP_FIELD_ARRAY(_num)field##_num ->symbol = label;\
+                    field##_num ->type = index;\
+                    field##_num ->value = value;\
+                    flag = legal##_num##Operand;
+
+#define SETUP_FIELD_REG(_num) field##_num->symbol = NULL;\
+                    field##_num->type = reg;\
+                    field##_num ->value = value;\
+                    flag = legal##_num##Operand;
+
 typedef enum {
     readingLineSO,
     externDefinition,
@@ -41,64 +65,61 @@ typedef enum {
     errorIllegalKeyWord,
     errorSymbolHashTableFull,
     errorDefiningConstant,
-    errorIllegalSymbolOrTableFull,
+    errorIllegalConstant,
     errorEnteringData,
     errorMemoryFull,
     errorOperandTypes,
     errorDefiningEntryOrExtern,
     illegalString,
-    legalString, 
+    legalString,
+    errorIllegalSymbolOrTableFull,
+    errorDefinedEntryLabel,
     allclearSO
 } StageOneFlags;
 
 typedef enum {
+    noOperands,
+    legal1Operand,
+    legal2Operand,
     isConstant,
     isLabel,
     isArray,
     isRegister,
-    legal1Operand,
-    legal2Operands,
     illegalOperand,
     illegalConstantOperand,
     tooManyOperands,
-    noOperands,
+    errorCommas,
     failedCalloc,
     notReadOperands
 } OperandsFlags;
 
 
-/*
-This is the main first stage function.
-*/
+/*This is the main first stage function.*/
 StageOneFlags stageOne(FILE *);
-
-/*
-It gets the a pointer to the line and to an integer to possibly store 
-the opcode of the operation in the line. In the end it returns a flag, and inserts labels when encountered.
-*/
-StageOneFlags lineContextSO(char *, int *);
+/*Check if a symbol, constant or label is legal and undefined already.*/
 Bool isLegalSymbol(char *, Bool);
+
+/*Checks if the first string at the start of a line is a label definition.*/
 Bool isLabelDefinition(char*);
 
 /*
-This function defines an external or entry label. It gets the line and
-if it is an entry call, handles the definition, and returns a flag.
+Parses the line to find the operands and sets up two
+field structures accordingly.
 */
-StageOneFlags defineExternOrEntryLabel(char *, Bool);
-
-/*
-This functions gets the line and defines a constant.
-*/
-StageOneFlags defineConstant(char *);
 OperandsFlags areLegalOperands(char *, Field *, Field *);
-OperandsFlags getOperandType(char *);
-StageOneFlags insertStringToMemory(const char *);
 
-/*
-Inserts data from the line.
-*/
-StageOneFlags insertData(char *);
+/*Finds the type of an operand*/
+OperandsFlags getOperandType(char *);
+
+/*Error handling function*/
 StageOneFlags errorHandlerSO(StageOneFlags, MemoryFlags, OperandsFlags, int);
+
+/*Frees the symbols*/
 void freeSymbols();
+
+/*Prints symbols for debugging*/
 void printSymbols();
+
+/*Update data labels to the correct address*/
 void updateDataLabels();
+

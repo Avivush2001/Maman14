@@ -8,6 +8,24 @@ BinaryWord *headData = NULL, *tailData = NULL;
 /*The IC and DC counters*/
 int IC = 0, DC = 0;
 
+/*
+Checks if we have enough memory to perform an operation insertion.
+*/
+static MemoryFlags getInsertionFlag(Field *, Field *);
+
+/*
+These next 4 functions Work basically the same. The needed to be different to handle different types of input.
+Create a new binary word for each type of addressing
+*/
+
+static MemoryFlags insertOpBin(int, int, int);
+
+static MemoryFlags insertConstBin(unsigned);
+
+static MemoryFlags insertAddressBin(char *);
+
+static MemoryFlags insertRegisterBin(int, int);
+
 /******************Memory Management Functions***************/
 
 /*Simple function to initialize the memory*/
@@ -33,8 +51,10 @@ void freeMemory() {
 
 /*Simple function to add the data to the rest of the memory*/
 void addDataToMemory() {
-    memoryTail->nextWord = headData;
-    memoryTail = tailData;
+    if (memoryTail != NULL) {
+        memoryTail->nextWord = headData;
+        memoryTail = tailData;
+    }
 }
 
 /******************Memory Insertion Functions***************/
@@ -147,7 +167,7 @@ the rest of the bits are set as needed for each type of word inserted (An operat
 Nullify the possibleLabel (unless it is an address word, for that it will save the pointer given) and the nextWord pointers, and add it to the linked list.
 */
 
-MemoryFlags insertOpBin(int opcode, int src, int dst) {
+static MemoryFlags insertOpBin(int opcode, int src, int dst) {
     INIT_BINARY_INSERTION
     if (insertionFlag == memoryAvailable) {
         newBinaryWord->bits[WORD_LENGTH] = '\0';
@@ -169,7 +189,7 @@ MemoryFlags insertOpBin(int opcode, int src, int dst) {
     return insertionFlag;
 }
 
-MemoryFlags insertConstBin(unsigned co) {
+static MemoryFlags insertConstBin(unsigned co) {
     INIT_BINARY_INSERTION
     if (insertionFlag == memoryAvailable) {
         newBinaryWord->bits[WORD_LENGTH] = '\0';
@@ -183,7 +203,7 @@ MemoryFlags insertConstBin(unsigned co) {
     return insertionFlag;
 }
 
-MemoryFlags insertAddressBin(char *symbol) {
+static MemoryFlags insertAddressBin(char *symbol) {
     INIT_BINARY_INSERTION
     if (insertionFlag == memoryAvailable) {
         newBinaryWord->bits[WORD_LENGTH] = '\0';
@@ -197,7 +217,7 @@ MemoryFlags insertAddressBin(char *symbol) {
     return insertionFlag;
 }
 
-MemoryFlags insertRegisterBin(int reg1, int reg2) {
+static MemoryFlags insertRegisterBin(int reg1, int reg2) {
     INIT_BINARY_INSERTION
     if (insertionFlag == memoryAvailable) {
         newBinaryWord->bits[WORD_LENGTH] = '\0';
@@ -249,7 +269,7 @@ void insertIntoBinaryWord(BinaryWord *newBinaryWord, unsigned data, int in, int 
 /*
 Checks if we have enough memory to perform an operation insertion.
 */
-MemoryFlags getInsertionFlag(Field *field1, Field *field2) {
+static MemoryFlags getInsertionFlag(Field *field1, Field *field2) {
     MemoryFlags status;
     int availableMemory, memoryNeeded = 1, fields = 2;
     availableMemory = ADDRESSES_ALLOWED - (IC + DC);
