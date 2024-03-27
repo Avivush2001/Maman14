@@ -35,12 +35,14 @@ Bool updateMemory() {
         if((i = lookUpTable(&symbolHashTable, possibleLabel)) == NOT_FOUND) {
             flag = False;
             PRINT_ERROR("Second", "Unknown Label\n")
-            continue;;
+            p = p->nextWord;
+            continue;
         } 
         label = symbolHashTable.items[i].item;
         if (label->attr == constant || label->attr == undefined) {
             flag = False;
             PRINT_ERROR("Second", "Undefined Entry Label, or used a constant\n")
+            p = p->nextWord;
             continue;
         }
         if (label->attr == external) {
