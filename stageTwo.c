@@ -75,6 +75,7 @@ static Bool updateMemory() {
     return flag;
 }
 
+/*This function creates an Entry file if needed */
 static Bool createEntryFile(char *fileName)
 {
     int i, counter = 0;
@@ -101,7 +102,7 @@ static Bool createEntryFile(char *fileName)
             }
         }
         fclose(nfp);
-        if(!counter)
+        if(!counter) /*there are no entry labels so delete the entry file as it's not needed */
         {
             if(remove(newName)) 
                 fprintf(stderr,"Failed to delete empty entry file for %s\n", fileName);
@@ -113,6 +114,7 @@ static Bool createEntryFile(char *fileName)
     return flag;
 }
 
+/*This function creates an Extern file if needed */
 static Bool createExternFile(char *fileName)
 {
     int i, counter = 100;
@@ -145,7 +147,7 @@ static Bool createExternFile(char *fileName)
             counter++;
         }
         fclose(nfp);
-        if(counter == 100)
+        if(counter == 100) /*there are no extern labels so delete the extern file as it's not needed */
         {
             if(remove(newName)) 
                 fprintf(stderr,"Failed to delete empty extern file for %s\n", fileName);
@@ -157,6 +159,7 @@ static Bool createExternFile(char *fileName)
     return flag;
 }
 
+/*This function creates an Object file */
 static Bool createObFile(char *fileName) 
 {
     int i = 100;
@@ -184,6 +187,7 @@ static Bool createObFile(char *fileName)
     
 }
 
+/*Changes the binary word into base 4 secret and prints it to file as output */
 static void encodeBinaryWordToFile(FILE *nfp, char* bits) {
     int i, sum;
     for(i = 0; i < WORD_LENGTH; i+=2) {
