@@ -71,6 +71,10 @@ static void assembler(int argc, char **argv) {
         /*PREASSEMBLER CALL*/
         fileName = newFileName(ogFileName, ".as");
         fp = fopen(fileName, "r");
+        if(fp == NULL) {
+            continueFlag = False;
+            printf("Failed to open as file for %s\n", fileName);
+        }
         CHECK_CONTINUE((preassembler(fp, ogFileName) != allclearPA))
         free(fileName);
         fclose(fp);
@@ -80,6 +84,10 @@ static void assembler(int argc, char **argv) {
         if(continueFlag) {
             fileName = newFileName(ogFileName, ".am");
             fp = fopen(fileName, "r");
+            if(fp == NULL) {
+                continueFlag = False;
+                printf("Failed to open as file for %s\n", fileName);
+            }
             free(fileName);
             CHECK_CONTINUE((stageOne(fp) != allclearSO))
             fclose(fp);

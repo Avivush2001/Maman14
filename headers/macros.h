@@ -19,7 +19,7 @@
 
 
 
-#define CHECK_CONTINUE(_condition) if(_condition) continueFlag = False;
+#define CHECK_CONTINUE(_condition) if(continueFlag && _condition) continueFlag = False;
 
 #define EXIT_IF(_bool) if (_bool) exit(EXIT_FAILURE);
 #define MALLOC_LINE malloc(sizeof(char) * MAX_LINE_LENGTH)
