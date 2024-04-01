@@ -5,11 +5,13 @@ extern HashTable symbolHashTable;
 extern BinaryWord *memoryHead, *memoryTail;
 extern int IC, DC;
 
+/*Main Stage Two Function*/
+Bool stageTwo(char *);
 /*Encodes a binary word and inserts it in the OB file.*/
 static void encodeBinaryWordToFile(FILE *, char*);
 
-/*Updates the memory and checks for undefined labels.*/
-static Bool updateMemory();
+/*Updates the symbol hash table and checks for undefined labels.*/
+static Bool updateLabels();
 
 /*Create an entries file.*/
 static Bool createEntryFile(char *);
@@ -23,11 +25,11 @@ static Bool createObFile (char *);
 /*
 Main stage two function, pretty un-complex
 compared to the other main function. It just
-start each step and makes sure each step passed.
+starts each step and makes sure each step passed.
 */
 Bool stageTwo(char *fileName)
 {
-    Bool flag = updateMemory();
+    Bool flag = updateLabels();
     if(flag)
         flag = createObFile(fileName);
     if(flag)
@@ -37,12 +39,18 @@ Bool stageTwo(char *fileName)
     return flag;
 }
 
-static Bool updateMemory() {
+/*
+It iterates through each memory word, and if a binary word has a label, add its value in the table.
+If the symbol stored in the word isn't in the table, or is either a constant / it is undefined (entry label left undefined),
+it also updates memory words to external
+it will print an error, change the flag to false, but it will continue to scan the rest of the memory.
+*/
+static Bool updateLabels() {
     Bool flag = True;
     BinaryWord *p = memoryHead;
     Symbol *label;
     char *possibleLabel;
-    int i, lineCounter = 1;
+    int i, lineCounter = 100; /*Note it is named lineCounter for the macro.*/
     while (p != NULL) {
         possibleLabel = p->possibleLabel;
         if(possibleLabel == NULL) {
@@ -54,6 +62,7 @@ static Bool updateMemory() {
             flag = False;
             PRINT_ERROR("Second", "Unknown Label at this address!\n")
             p = p->nextWord;
+            lineCounter++;
             continue;
         } 
         label = symbolHashTable.items[i].item;
@@ -61,9 +70,11 @@ static Bool updateMemory() {
             flag = False;
             PRINT_ERROR("Second", "Undefined Entry Label, or used a constant at this address!\n")
             p = p->nextWord;
+            lineCounter++;
             continue;
         }
         if (label->attr == external) {
+            insertIntoBinaryWord(p, E, 12, 2); /*Change the ARE of the binary word to E*/
             p = p->nextWord;
             lineCounter++;
             continue;
@@ -75,7 +86,10 @@ static Bool updateMemory() {
     return flag;
 }
 
-/*This function creates an Entry file if needed */
+/*
+It creates the new file, and iterates through the symbol hash table to look for external labels.
+If found it will add it to the file with its value.
+*/
 static Bool createEntryFile(char *fileName)
 {
     int i, counter = 0;
@@ -86,7 +100,7 @@ static Bool createEntryFile(char *fileName)
     OPEN_NEW_FILE
     if(nfp == NULL) {
         flag = False;
-        fprintf(stderr,"Failed to create entry file for %s\n", fileName);
+        printf("Failed to create entry file for %s\n", fileName);
     }
     else
     {
@@ -105,7 +119,7 @@ static Bool createEntryFile(char *fileName)
         if(!counter) /*there are no entry labels so delete the entry file as it's not needed */
         {
             if(remove(newName)) 
-                fprintf(stderr,"Failed to delete empty entry file for %s\n", fileName);
+                printf("Failed to delete empty entry file for %s\n", fileName);
             
         }
     }
@@ -114,7 +128,10 @@ static Bool createEntryFile(char *fileName)
     return flag;
 }
 
-/*This function creates an Extern file if needed */
+/*
+It creates the new file, and iterates through the memory to look for external labels.
+If found it will add it to the file with the correct address.
+*/
 static Bool createExternFile(char *fileName)
 {
     int i, counter = 100;
@@ -126,7 +143,7 @@ static Bool createExternFile(char *fileName)
     OPEN_NEW_FILE
     if(nfp == NULL) {
         flag = False;
-        fprintf(stderr,"Failed to create extern file for %s\n", fileName);
+        printf("Failed to create extern file for %s\n", fileName);
     }
     else
     {
@@ -150,7 +167,7 @@ static Bool createExternFile(char *fileName)
         if(counter == 100) /*there are no extern labels so delete the extern file as it's not needed */
         {
             if(remove(newName)) 
-                fprintf(stderr,"Failed to delete empty extern file for %s\n", fileName);
+                printf("Failed to delete empty extern file for %s\n", fileName);
             
         }
     }
@@ -159,7 +176,9 @@ static Bool createExternFile(char *fileName)
     return flag;
 }
 
-/*This function creates an Object file */
+/*
+It creates the new file, and encodes each binary word in the memory.
+*/
 static Bool createObFile(char *fileName) 
 {
     int i = 100;
@@ -170,9 +189,9 @@ static Bool createObFile(char *fileName)
     OPEN_NEW_FILE
     if(nfp == NULL) {
         flag = False;
-        fprintf(stderr,"Failed to create ob file for %s\n", fileName);
+        printf("Failed to create ob file for %s\n", fileName);
     } else {
-        fprintf(nfp, "\t%d %d\n", IC, DC);
+        fprintf(nfp, "\t%d %d\n", IC, DC); /*Header for the ob file*/
         while (p != NULL) {
             fprintf(nfp, "%04d\t", i);
             encodeBinaryWordToFile(nfp, p->bits);
@@ -187,7 +206,12 @@ static Bool createObFile(char *fileName)
     
 }
 
-/*Changes the binary word into base 4 secret and prints it to file as output */
+/*
+First the sum is set to 0. It checks the characters in intervals of two characters,
+the first character representing 2^1 and the second 2^0. It converts it to
+an integer in the range of 0-3, and is stored in the sum. Then a switch case puts the char in the file
+and in the end it inserts a new line.
+*/
 static void encodeBinaryWordToFile(FILE *nfp, char* bits) {
     int i, sum;
     for(i = 0; i < WORD_LENGTH; i+=2) {

@@ -4,46 +4,79 @@
 /*Global Assembler Tables*/
 extern HashTable symbolHashTable, macroHashTable;
 
-/* int main() {
-    
-    FILE *fp;
-    PreassemblerFlags flagPA;
-    initializeHashTable(&macroHashTable);
-    initializeHashTable(&symbolHashTable);
-    fp = fopen("testOriginal.as", "r");
-    flagPA = preassembler(fp, "testOriginal");
-    if (flagPA == errorEncounteredPA) {
-        remove("testOriginal.am");
-    }
-    fclose(fp);
-    fp = fopen("testOriginal.am", "r");
-    stageOne(fp);
-    fclose(fp);
-    freeTableNames(&macroHashTable);
-    freeTableNames(&symbolHashTable);
-    return 0;
-} */
+/*No reason to create a header file for one function*/
+extern Bool stageTwo(char *);
+
+static void assembler(int, char**);
+
 int main(int argc, char **argv) {
+    char *originalTest[] = {"RUN_UNI_TEST", "originalTest/ps"};
+    char *allTests[] = {"RUN_ALL_TESTS",
+    "tests/original",
+    "tests/someWeirdStuff",
+    "tests/error1",
+    "tests/error2",
+    "tests/error3",
+    "tests/error4",
+    "tests/error5",
+    "tests/error6",
+    "tests/error7"
+    };
+    char *ogFileName;
+
+    ogFileName = argv[argc-1];
+    if (argc == 1)
+        printf( "No arguments were given\n");
+    else if (argc == 2) {
+        if (!strcmp(ogFileName, originalTest[0]))
+            assembler(argc, originalTest);
+        else if (!strcmp(ogFileName, allTests[0]))
+            assembler(10, allTests);
+        else assembler(argc, argv);
+    } else assembler(argc, argv);
+    
+    
+    return 0;
+}
+
+/*
+NOTE: The variable 'fileName' holds the name *with a suffix* and should be freed when not needed
+anymore or before changing the suffix.
+
+NOTE: If an error is encountered at any stage the function of that stage is responsible to print an error, and return
+an error flag so the assembler function can move on.
+
+Main assembler function. First it initializes the memory, the hash tables, a flag and 
+the name of the current file (note it expects the name to be without a suffix). 
+
+It then opens the .as file, and starts the pre assembler function, closes the .as file and opens the .am file,
+starts the first stage and closes the .am file, starts the second stage, prints a message about the success of this iteration, 
+and frees memory.
+*/
+static void assembler(int argc, char **argv) {
     FILE *fp;
     char *fileName, *ogFileName;
     Bool continueFlag;
-    if (argc == 1) {
-        fprintf(stderr, "No arguments were given\n");
-        exit(1);
-    }
     while (argc != 1) {
+
+        /*INITIALIZATIONS OF THE ASSEMBLER*/
         initializeMemory();
-        continueFlag = True;
-        ogFileName = argv[argc-1];
         initializeHashTable(&macroHashTable);
         initializeHashTable(&symbolHashTable);
-        printf("%s assembly started...\n", ogFileName);
+        continueFlag = True;
+        ogFileName = argv[argc-1];
+        printf("\n%s assembly started...\n", ogFileName);
+        /*END OF INITIALIZATIONS*/
+
+        /*PREASSEMBLER CALL*/
         fileName = newFileName(ogFileName, ".as");
         fp = fopen(fileName, "r");
         CHECK_CONTINUE((preassembler(fp, ogFileName) != allclearPA))
         free(fileName);
         fclose(fp);
-
+        /*END OF PREASSEMBLER CALL*/
+        
+        /*FIRST STAGE CALL*/
         if(continueFlag) {
             fileName = newFileName(ogFileName, ".am");
             fp = fopen(fileName, "r");
@@ -51,19 +84,20 @@ int main(int argc, char **argv) {
             CHECK_CONTINUE((stageOne(fp) != allclearSO))
             fclose(fp);
         }
+        /*END OF FIRST STAGE CALL*/
+
         if (continueFlag) {
-            CHECK_CONTINUE((!stageTwo(ogFileName)))
+            CHECK_CONTINUE((!stageTwo(ogFileName))) /*SECOND STAGE CALL*/
         }
+        /*END OF ITERATION AND STARTS FREEING RESOURCES*/
         if (continueFlag)
             printf("%s successfully assembled! Continuing to next file...\n", ogFileName);
         else printf("%s failed assembly! Continuing to next file...\n", ogFileName);
         argc--;
+        freeMemory();
         freeSymbols();
         freeTableNames(&macroHashTable);
         freeTableNames(&symbolHashTable);
     }
-    printf("Assembler operation finished!\n");
-    return 0;
+    printf("\nAssembler operation finished!\n");
 }
-
-

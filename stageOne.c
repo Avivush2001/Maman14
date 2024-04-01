@@ -146,7 +146,7 @@ static StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
     StageOneFlags contextFlag = readingLineSO;
     char str1[MAX_LABEL_SIZE+1], str2[MAX_LABEL_SIZE], str3[MAX_LABEL_SIZE];
     /*Get strings*/
-    stringsCounter = sscanf(line, "%32s %31s, %31s", str1, str2, str3);
+    stringsCounter = sscanf(line, "%32s %31s %31s", str1, str2, str3);
     if (stringsCounter == -1) contextFlag = skipLine;/*Check for empty line*/
     else if (*str1 == ';') contextFlag = skipLine;/*Check for comment line*/
     else{
@@ -211,7 +211,7 @@ static StageOneFlags lineContextSO(char *line, int *possibleOpCode) {
                 
                 /*Handle a case of a label before .extern .entry .define*/
                 if (contextFlag == warningLabelInDumbPlace) {
-                    fprintf(stderr, "WARNING Label: %s is in an illegal location and will be considered undefined.\n", symb->symbol);
+                    printf( "WARNING Label: %s is in an illegal location and will be considered undefined.\n", symb->symbol);
                     free(symb->symbol);
                     free(symb);
                     symbolItem->name = "\0";
@@ -285,14 +285,14 @@ static StageOneFlags defineExternOrEntryLabel(char *line, Bool isEntry)
         symb = symbolHashTable.items[i].item;
         if (isEntry) {
             if (symb->entry) 
-                fprintf(stderr, "WARNING entry label %s defined multiple times.\n", label);
+                printf( "WARNING entry label %s defined multiple times.\n", label);
             
             if (symb->attr != external && symb->attr != constant) 
                 symb->entry = isEntry;
             else flag = errorDefiningEntryOrExtern;
         } else {
             if (symb->attr == external)
-                fprintf(stderr, "WARNING extern label %s defined multiple times.\n", label);
+                printf( "WARNING extern label %s defined multiple times.\n", label);
             else flag = errorDefiningEntryOrExtern;
             
         }

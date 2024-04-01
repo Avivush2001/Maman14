@@ -1,0 +1,31 @@
+; file someWeirdStuff.as
+; double entry or extern should print errors
+.entry LIST 
+.entry LIST 
+.extern W
+.extern W 
+.define sz = +2047 
+MAIN:	mov r3, LIST[sz]
+LOOP: 	jmp W 
+	prn #-5
+	mov STR[5], STR[2] 
+	sub r1, r4
+	cmp K, #sz
+	bne W
+L1: 	inc L3 
+; label in wrong place should print a warning
+END: .entry LOOP
+	bne LOOP 
+END: hlt
+DUMB12LABEL: .define len = -2048
+
+; testing weird strings and labels
+STR: .string ""
+Str: .string """
+sTR: .string "\0"
+StR: .string "\n"
+LIST: .data +8191, -8192, len 
+K: .data 22 
+.extern L3
+; file for testing weird stuff
+; that shouldn't cause errors

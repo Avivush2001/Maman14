@@ -175,7 +175,7 @@ static MemoryFlags insertOpBin(int opcode, int src, int dst) {
         insertIntoBinaryWord(newBinaryWord, opcode, 4, 4);
         insertIntoBinaryWord(newBinaryWord, src, 8, 2);
         insertIntoBinaryWord(newBinaryWord, dst, 10, 2);
-        insertIntoBinaryWord(newBinaryWord, immediate, 12, 2);
+        insertIntoBinaryWord(newBinaryWord, A, 12, 2);
         newBinaryWord->possibleLabel = NULL;
         newBinaryWord->nextWord = NULL;
         if (memoryHead == NULL){
@@ -194,7 +194,7 @@ static MemoryFlags insertConstBin(unsigned co) {
     if (insertionFlag == memoryAvailable) {
         newBinaryWord->bits[WORD_LENGTH] = '\0';
         insertIntoBinaryWord(newBinaryWord, co, 0, 12);
-        insertIntoBinaryWord(newBinaryWord, immediate, 12, 2);
+        insertIntoBinaryWord(newBinaryWord, A, 12, 2);
         newBinaryWord->possibleLabel = NULL;
         newBinaryWord->nextWord = NULL;
         ADD_TO_MEMORY
@@ -208,7 +208,7 @@ static MemoryFlags insertAddressBin(char *symbol) {
     if (insertionFlag == memoryAvailable) {
         newBinaryWord->bits[WORD_LENGTH] = '\0';
         insertIntoBinaryWord(newBinaryWord, 0, 0, 12);
-        insertIntoBinaryWord(newBinaryWord, index, 12, 2);
+        insertIntoBinaryWord(newBinaryWord, R, 12, 2);
         newBinaryWord->possibleLabel = symbol;
         newBinaryWord->nextWord = NULL;
         ADD_TO_MEMORY
@@ -224,7 +224,7 @@ static MemoryFlags insertRegisterBin(int reg1, int reg2) {
         insertIntoBinaryWord(newBinaryWord, 0, 0, 6);
         insertIntoBinaryWord(newBinaryWord, reg1, 6, 3);
         insertIntoBinaryWord(newBinaryWord, reg2, 9, 3);
-        insertIntoBinaryWord(newBinaryWord, immediate, 12, 2);
+        insertIntoBinaryWord(newBinaryWord, A, 12, 2);
         newBinaryWord->possibleLabel = NULL;
         newBinaryWord->nextWord = NULL;
         ADD_TO_MEMORY

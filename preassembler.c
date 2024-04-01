@@ -96,7 +96,7 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName) {
     if(nfp == NULL) {
         contextFlag = errorEncounteredPA;
         errorFlagPA = contextFlag;
-        fprintf(stderr,"Failed to create am file for %s\n", fileName);
+        printf("Failed to create am file for %s\n", fileName);
     }
     /*Main loop (step 1)*/
     while(fgets(line, MAX_LINE_LENGTH, fp) != NULL && contextFlag != errorEncounteredPA) {
@@ -160,10 +160,10 @@ PreassemblerFlags preassembler(FILE *fp, char *fileName) {
         errorFlagPA = errorHandlerPA(&contextFlag, errorFlagPA,lineCounter, fileName);
     }
     if(contextFlag != errorEncounteredPA) {
-        fclose(nfp);
         if (errorFlagPA == errorEncounteredPA)
             remove(newName);
     }
+    fclose(nfp);
     freeMacrosFromTable();
     free(newName);
     return errorFlagPA;

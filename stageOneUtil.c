@@ -236,7 +236,7 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
                 break;
             }
             default:
-                break;    
+                BREAK_WITH_FLAG(illegalOperand)
         }
         token = strtok(NULL, delimiter);
     }
