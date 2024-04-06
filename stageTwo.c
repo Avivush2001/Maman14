@@ -6,7 +6,7 @@ extern BinaryWord *memoryHead, *memoryTail;
 extern int IC, DC;
 
 /*Main Stage Two Function*/
-Bool stageTwo(char *);
+Bool stageTwo(char *, Bool);
 /*Encodes a binary word and inserts it in the OB file.*/
 static void encodeBinaryWordToFile(FILE *, char*);
 
@@ -27,9 +27,10 @@ Main stage two function, pretty un-complex
 compared to the other main function. It just
 starts each step and makes sure each step passed.
 */
-Bool stageTwo(char *fileName)
+Bool stageTwo(char *fileName, Bool notFailedFirstStage)
 {
     Bool flag = updateLabels();
+    flag = flag && notFailedFirstStage;
     if(flag)
         flag = createObFile(fileName);
     if(flag)
@@ -51,13 +52,16 @@ static Bool updateLabels() {
     Symbol *label;
     char *possibleLabel;
     int i, lineCounter = 100; /*Note it is named lineCounter for the macro.*/
+
     while (p != NULL) {
+
         possibleLabel = p->possibleLabel;
-        if(possibleLabel == NULL) {
+        if(possibleLabel == NULL || *possibleLabel == '0') {
             p = p->nextWord;
             lineCounter++;
             continue;
         }
+
         if((i = lookUpTable(&symbolHashTable, possibleLabel)) == NOT_FOUND) {
             flag = False;
             PRINT_ERROR("Second", "Unknown Label at this address!\n")
@@ -65,7 +69,9 @@ static Bool updateLabels() {
             lineCounter++;
             continue;
         } 
+
         label = symbolHashTable.items[i].item;
+
         if (label->attr == constant || label->attr == undefined) {
             flag = False;
             PRINT_ERROR("Second", "Undefined Entry Label, or used a constant at this address!\n")
@@ -78,6 +84,38 @@ static Bool updateLabels() {
             p = p->nextWord;
             lineCounter++;
             continue;
+        }
+        if(label->attr == code) {
+            if(p != memoryTail && p->nextWord->possibleLabel == NULL) {
+                flag = False;
+                PRINT_ERROR("Second", "Label for code when a label for data expected at this address!\n")
+                p = p->nextWord;
+                lineCounter++;
+                continue;
+            }
+        }
+        if(label->attr == data) {
+            int in;
+            if(p == memoryTail || p->nextWord->possibleLabel != NULL) {
+                insertIntoBinaryWord(p, label->value, 0, 12);
+                p = p->nextWord;
+                lineCounter++;
+                continue;
+            }
+            /*
+            Even though the guidelines didn't specify this, in the forums it was said that 
+            array indexes should be checked.
+            */
+            in = baseTwoToTen(p->nextWord->bits);
+
+            if (in < 0 || in >= label->arrayLength) {
+                flag = False;
+                PRINT_ERROR("Second", "Index for label is out of bounds at this address!\n")
+                p = p->nextWord;
+                lineCounter++;
+                continue;
+            }
+                
         }
         insertIntoBinaryWord(p, label->value, 0, 12);
         p = p->nextWord;
@@ -150,7 +188,7 @@ static Bool createExternFile(char *fileName)
         while (p != NULL) 
         {
             possibleLabel = p->possibleLabel;
-            if(possibleLabel == NULL) 
+            if(possibleLabel == NULL || *possibleLabel == '0') 
             {
                 p = p->nextWord;
                 counter++;

@@ -1,5 +1,5 @@
 /*
-This is a header file for more general structures and enums that I wasn't
+This is a header file for more general structures and enums that we weren't
 sure where to put.
 */
 
@@ -17,6 +17,7 @@ typedef enum {
     undefined
 } Attribute;
 
+/*Addressing methods*/
 typedef enum {
     immediate = 0,
     direct = 1,
@@ -24,6 +25,11 @@ typedef enum {
     reg = 3
 } Addressing;
 
+/*
+A struct that defines an operations.
+has a name, 2 arrays of booleans to indicate which source or destination operands are allowed
+and an integer that holds the fields expected
+*/
 typedef struct {
     char name[4];
     Bool allowedSrc[4];
@@ -31,13 +37,20 @@ typedef struct {
     unsigned fields :2;
 } Operation;
 
+/*
+Defines a symbol. Can be either a label or a constant.
+It has an attribute, the string of the symbol, a value, an array length (in case it is a data label) and a boolean
+to check if it is entry.
+*/
 typedef struct {
+    Attribute attr;
     char *symbol;
     int value;
+    int arrayLength;
     Bool entry;
-    Attribute attr;
 } Symbol;
 
+/*A struct to define an operand, explanation about its use is given.*/
 typedef struct {
     Addressing type;
     char *symbol;

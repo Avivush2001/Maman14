@@ -1,7 +1,17 @@
+/*
+    Header for the utilities
+*/
+
+/*
+Struct returned by stringToInt function.
+The functions checks and converts a string
+to an integers and returns a struct of this kind, with a boolean to indicate
+if it was converted successfully 
+*/
 typedef struct {
     Bool isNum; 
     int result;
-} wholeNum;
+} WholeNum;
 
 /*Finds a string in the operations array*/
 int findOperation(char*);
@@ -16,10 +26,13 @@ int findInstruction(char*);
 Bool isValidSymbol(char*);
 
 /*Convert a string to an int*/
-wholeNum string_to_int(const char *);
+WholeNum stringToInt(const char *);
 
 /*Check if a string is a legal array*/
 Bool isLegalArray(const char *);
 
 /*Get a new file name*/
 char *newFileName(char *, char *);
+
+/*Calculate the base 10 value of the last 12 bits of a binary word*/
+int baseTwoToTen(char *);

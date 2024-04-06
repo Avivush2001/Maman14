@@ -8,6 +8,7 @@ BinaryWord *headData = NULL, *tailData = NULL;
 /*The IC and DC counters*/
 int IC = 0, DC = 0;
 
+extern char * registersArr[];
 /*
 Checks if we have enough memory to perform an operation insertion.
 */
@@ -20,7 +21,7 @@ Create a new binary word for each type of addressing
 
 static MemoryFlags insertOpBin(int, int, int);
 
-static MemoryFlags insertConstBin(unsigned);
+static MemoryFlags insertConstBin(unsigned, Bool);
 
 static MemoryFlags insertAddressBin(char *);
 
@@ -81,7 +82,7 @@ MemoryFlags insertDataWord(Data *dataStruc) {
         tailData = newBinaryWord;
         insertionFlag = wordCreationSuccess;
         newBinaryWord->nextWord = NULL;
-        newBinaryWord->possibleLabel = NULL;
+        newBinaryWord->possibleLabel = "0";/*just needs to not be NULL for stage 2 purposes*/
         DC++;
     }
     return insertionFlag;
@@ -111,14 +112,14 @@ MemoryFlags insertOperation(int opcode, Field *field1, Field *field2) {
             insertionFlag = insertOpBin(opcode,0,TYPE_OF_FIELD_2);
             switch (field2->type) {
                 case immediate:
-                    insertionFlag = insertConstBin(field2->value);\
+                    insertionFlag = insertConstBin(field2->value, False);\
                     break;
                 case direct:
                     insertionFlag = insertAddressBin(field2->symbol);\
                     break;
                 case index:
                     insertionFlag = insertAddressBin(field2->symbol);\
-                    insertionFlag = insertConstBin(field2->value);\
+                    insertionFlag = insertConstBin(field2->value, True);\
                     break;
                 case reg:
                     insertionFlag = insertRegisterBin(field2->value,0);\
@@ -139,14 +140,14 @@ MemoryFlags insertOperation(int opcode, Field *field1, Field *field2) {
                 INSERT_FIELD1
                 switch (field2->type) {
                 case immediate:
-                    insertionFlag = insertConstBin(field2->value);\
+                    insertionFlag = insertConstBin(field2->value, False);\
                     break;
                 case direct:
                     insertionFlag = insertAddressBin(field2->symbol);\
                     break;
                 case index:
                     insertionFlag = insertAddressBin(field2->symbol);\
-                    insertionFlag = insertConstBin(field2->value);\
+                    insertionFlag = insertConstBin(field2->value, True);\
                     break;
                 case reg:
                     insertionFlag = insertRegisterBin(0,field2->value);\
@@ -176,7 +177,7 @@ static MemoryFlags insertOpBin(int opcode, int src, int dst) {
         insertIntoBinaryWord(newBinaryWord, src, 8, 2);
         insertIntoBinaryWord(newBinaryWord, dst, 10, 2);
         insertIntoBinaryWord(newBinaryWord, A, 12, 2);
-        newBinaryWord->possibleLabel = NULL;
+        newBinaryWord->possibleLabel = "0"; /*just needs to not be NULL for stage 2 purposes*/
         newBinaryWord->nextWord = NULL;
         if (memoryHead == NULL){
             memoryHead = newBinaryWord;
@@ -189,13 +190,17 @@ static MemoryFlags insertOpBin(int opcode, int src, int dst) {
     return insertionFlag;
 }
 
-static MemoryFlags insertConstBin(unsigned co) {
+static MemoryFlags insertConstBin(unsigned co, Bool isIndex) {
+
     INIT_BINARY_INSERTION
     if (insertionFlag == memoryAvailable) {
         newBinaryWord->bits[WORD_LENGTH] = '\0';
         insertIntoBinaryWord(newBinaryWord, co, 0, 12);
         insertIntoBinaryWord(newBinaryWord, A, 12, 2);
-        newBinaryWord->possibleLabel = NULL;
+
+        if (isIndex)
+            newBinaryWord->possibleLabel = NULL;
+        else newBinaryWord->possibleLabel = "0";/*just needs to not be NULL for stage 2 purposes*/
         newBinaryWord->nextWord = NULL;
         ADD_TO_MEMORY
         insertionFlag = wordCreationSuccess;
@@ -225,7 +230,7 @@ static MemoryFlags insertRegisterBin(int reg1, int reg2) {
         insertIntoBinaryWord(newBinaryWord, reg1, 6, 3);
         insertIntoBinaryWord(newBinaryWord, reg2, 9, 3);
         insertIntoBinaryWord(newBinaryWord, A, 12, 2);
-        newBinaryWord->possibleLabel = NULL;
+        newBinaryWord->possibleLabel = "0";/*just needs to not be NULL for stage 2 purposes*/
         newBinaryWord->nextWord = NULL;
         ADD_TO_MEMORY
         insertionFlag = wordCreationSuccess;

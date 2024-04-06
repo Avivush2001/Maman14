@@ -206,9 +206,9 @@ int countWordsInLine(char *line) {
 }
 
 /* Checks if a string is a whole number- if it is return the number as a int */
-wholeNum string_to_int(const char *str)
+WholeNum stringToInt(const char *str)
 {
-    wholeNum num = {True,0};
+    WholeNum num = {True,0};
     int sign = 1, i = 0, x = 0, digit_value; /*sign: 1 for positive, -1 for negative*/
   if (str == NULL || *str == '\0') {
     num.isNum = False;
@@ -285,7 +285,7 @@ Bool isLegalArray(const char *str)
                     i = size - strlen(right);
                     strncpy(temp, left, i);
                     temp[i] = '\0';
-                    if(isValidSymbol(temp) == False && string_to_int(temp).isNum == False)
+                    if(isValidSymbol(temp) == False && stringToInt(temp).isNum == False)
                         flag = False;
                 }
             }
@@ -293,6 +293,7 @@ Bool isLegalArray(const char *str)
     }
     return flag;
 }
+
 /*Create a new file name with a given suffix.*/
 char *newFileName(char *fname, char *suffix) 
 {
@@ -306,4 +307,14 @@ char *newFileName(char *fname, char *suffix)
     p = strcat(p, suffix);
     
     return p;
+}
+
+/*Calculate the base 10 value of the last 12 bits of a binary word*/
+int baseTwoToTen(char *bits) {
+    int i, sum = 0;
+    for (i = 0; i < WORD_LENGTH-2; i++) {
+        if(bits[i] == '1')
+            sum += pow(2,WORD_LENGTH - i - 3);
+    }
+    return sum;
 }

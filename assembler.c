@@ -5,22 +5,16 @@
 extern HashTable symbolHashTable, macroHashTable;
 
 /*No reason to create a header file for one function*/
-extern Bool stageTwo(char *);
+extern Bool stageTwo(char *, Bool);
 
 static void assembler(int, char**);
 
 int main(int argc, char **argv) {
     char *originalTest[] = {"RUN_UNI_TEST", "originalTest/ps"};
     char *allTests[] = {"RUN_ALL_TESTS",
-    "tests/original",
-    "tests/someWeirdStuff",
-    "tests/error1",
-    "tests/error2",
-    "tests/error3",
-    "tests/error4",
-    "tests/error5",
-    "tests/error6",
-    "tests/error7"
+        "tests/errorFile",
+        "tests/someWeirdStuff",
+        "tests/original"
     };
     char *ogFileName;
 
@@ -56,14 +50,14 @@ and frees memory.
 static void assembler(int argc, char **argv) {
     FILE *fp;
     char *fileName, *ogFileName;
-    Bool continueFlag;
+    Bool failFlag;
     while (argc != 1) {
 
         /*INITIALIZATIONS OF THE ASSEMBLER*/
         initializeMemory();
         initializeHashTable(&macroHashTable);
         initializeHashTable(&symbolHashTable);
-        continueFlag = True;
+        failFlag = True;
         ogFileName = argv[argc-1];
         printf("\n%s assembly started...\n", ogFileName);
         /*END OF INITIALIZATIONS*/
@@ -72,33 +66,36 @@ static void assembler(int argc, char **argv) {
         fileName = newFileName(ogFileName, ".as");
         fp = fopen(fileName, "r");
         if(fp == NULL) {
-            continueFlag = False;
+            failFlag = False;
             printf("Failed to open as file for %s\n", fileName);
         }
-        CHECK_CONTINUE((preassembler(fp, ogFileName) != allclearPA))
+        failFlag = preassembler(fp, ogFileName) == allclearPA;
         free(fileName);
         fclose(fp);
         /*END OF PREASSEMBLER CALL*/
-        
-        /*FIRST STAGE CALL*/
-        if(continueFlag) {
-            fileName = newFileName(ogFileName, ".am");
-            fp = fopen(fileName, "r");
-            if(fp == NULL) {
-                continueFlag = False;
-                printf("Failed to open as file for %s\n", fileName);
-            }
-            free(fileName);
-            CHECK_CONTINUE((stageOne(fp) != allclearSO))
-            fclose(fp);
-        }
-        /*END OF FIRST STAGE CALL*/
 
-        if (continueFlag) {
-            CHECK_CONTINUE((!stageTwo(ogFileName))) /*SECOND STAGE CALL*/
+        /*OPENING THE AM FILE*/
+        fileName = newFileName(ogFileName, ".am");
+        fp = fopen(fileName, "r");
+        if(fp == NULL) {
+            failFlag = False;
+            printf("Failed to open am file for %s\n", fileName);
         }
+        free(fileName);
+
+        /*HANDLING FIRST AND SECOND STAGE*/
+        if(failFlag) {
+            /*FIRST STAGE CALL*/
+            failFlag = stageOne(fp) == allclearSO;
+            fclose(fp);
+            /*END OF FIRST STAGE CALL*/
+
+            failFlag = stageTwo(ogFileName, failFlag);/*SECOND STAGE CALL*/
+        }
+        
+        
         /*END OF ITERATION AND STARTS FREEING RESOURCES*/
-        if (continueFlag)
+        if (failFlag)
             printf("%s successfully assembled! Continuing to next file...\n", ogFileName);
         else printf("%s failed assembly! Continuing to next file...\n", ogFileName);
         argc--;

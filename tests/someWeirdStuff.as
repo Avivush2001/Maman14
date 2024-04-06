@@ -5,10 +5,10 @@
 .extern W
 .extern W 
 .define sz = +2047 
-MAIN:	mov r3, LIST[sz]
+MAIN:	mov r3, LIST[0]
 LOOP: 	jmp W
 	prn #-5
-	mov STR[5], STR[2] 
+	mov STR[0], STR[0] 
 	sub r1, r4
 	cmp K, #sz
 	bne W
@@ -28,4 +28,5 @@ LIST: .data +8191, -8192, len
 K: .data 22 
 .extern L3
 ; file for testing weird stuff
-; that shouldn't cause errors
+; that shouldn't cause
+; fatal errors

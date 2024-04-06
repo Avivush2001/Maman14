@@ -1,3 +1,9 @@
+/*
+    First stage header file.
+    The first stage handles a lot of different scenarios, and so
+    we split it into two files, and used a lot of flags (even two different types)
+*/
+
 #define DEFAULT_CONTEXT_SO contextFlag = readingLineSO;
 #define MALLOC_SYMBOL malloc(sizeof(Symbol))
 #define CHECK_INSTRUCTIONS switch(i) {\
@@ -50,6 +56,7 @@ break;
                     field##_num ->value = value;\
                     flag = legal##_num##Operand;
 
+/*Flags for the main stage one operation*/
 typedef enum {
     readingLineSO,
     externDefinition,
@@ -77,6 +84,7 @@ typedef enum {
     allclearSO
 } StageOneFlags;
 
+/*Flags for the operand function.*/
 typedef enum {
     noOperands,
     legal1Operand,
@@ -89,13 +97,13 @@ typedef enum {
     illegalConstantOperand,
     tooManyOperands,
     errorCommas,
-    failedCalloc,
     notReadOperands
 } OperandsFlags;
 
 
 /*This is the main first stage function.*/
 StageOneFlags stageOne(FILE *);
+
 /*Check if a symbol, constant or label is legal and undefined already.*/
 Bool isLegalSymbol(char *, Bool);
 
@@ -112,7 +120,7 @@ OperandsFlags areLegalOperands(char *, Field *, Field *);
 OperandsFlags getOperandType(char *);
 
 /*Error handling function*/
-StageOneFlags errorHandlerSO(StageOneFlags, MemoryFlags, OperandsFlags, int);
+StageOneFlags errorHandlerSO(StageOneFlags, StageOneFlags, MemoryFlags, OperandsFlags, int);
 
 /*Frees the symbols*/
 void freeSymbols();

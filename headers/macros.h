@@ -1,3 +1,13 @@
+/*
+    Macro header file, for general use throughout the program.
+    NOTE: some macros throughout the header files
+    were created because of one of these reasons:
+    1. Were useful
+    2. Seemed useful at the time
+    3. makes certain long functions more readable
+*/
+
+/*CONSTANTS*/
 #define RAM_SIZE 4096
 #define STARTING_ADDRESS 100
 #define ADDRESSES_ALLOWED RAM_SIZE-STARTING_ADDRESS
@@ -15,17 +25,15 @@
 #define A 0
 #define R 2
 #define E 1
+
+/*MISC*/
 #define OPEN_NEW_FILE nfp = fopen(newName, "w");
-
-
-
-#define CHECK_CONTINUE(_condition) if(continueFlag && _condition) continueFlag = False;
-
-#define EXIT_IF(_bool) if (_bool) exit(EXIT_FAILURE);
 #define MALLOC_LINE malloc(sizeof(char) * MAX_LINE_LENGTH)
 #define MALLOC_LABEL malloc(sizeof(char) * MAX_LABEL_SIZE)
 #define READ_FIRST_TWO_FIELDS sscanf(line, "%31s %31s", str1, str2)
 
+/*Some macros for handling and printing errors*/
+#define EXIT_IF(_bool) if (_bool) exit(EXIT_FAILURE);
 #define PRINT_ERROR(_stage,_errorMessage) printf("Error encountered during %s stage!\n", _stage);\
 printf("At %d: %s",lineCounter, _errorMessage);
 

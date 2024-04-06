@@ -1,3 +1,12 @@
+/*
+    Header file for the memory module.
+    The is implemented using 2 linked lists, one for operations and one
+    for data, later being combined after the first stage.
+    Each binary word in the linked list has a char array of bits,
+    a pointer to a possible label so the stage 2 function knows which memory words
+    to change (For later handling out of bound arrays, each binary word that isn't a label or an index of an array
+    has a pointer to "0")
+*/
 #define CHECK_MEMORY_ALLOC_ERROR(_word, _flag) if (_word == NULL) \
 _flag = memoryAllocationError;
 #define GET_MEMORY_STATUS(_flag) if ((IC + DC) >= ADDRESSES_ALLOWED) _flag = memoryFull; \
@@ -6,14 +15,14 @@ else _flag = memoryAvailable;
 #define TYPE_OF_FIELD_2 field2->type
 #define INSERT_FIELD1 switch (field1->type) {\
                 case immediate:\
-                    insertionFlag = insertConstBin(field1->value);\
+                    insertionFlag = insertConstBin(field1->value, False);\
                     break;\
                 case direct:\
                     insertionFlag = insertAddressBin(field1->symbol);\
                     break;\
                 case index:\
                     insertionFlag = insertAddressBin(field1->symbol);\
-                    insertionFlag = insertConstBin(field1->value);\
+                    insertionFlag = insertConstBin(field1->value, True);\
                     break;\
                 case reg:\
                     insertionFlag = insertRegisterBin(field1->value,0);\
@@ -32,17 +41,19 @@ else _flag = memoryAvailable;
     EXIT_IF(newBinaryWord == NULL)\
     }
 
-
+/*Struct for binary words inserted in the memory*/
  typedef struct BinaryWord{
    char bits[WORD_LENGTH + 1];
    char * possibleLabel;
    struct BinaryWord *nextWord;
  } BinaryWord;
 
+/*defines data struct for data insertions*/
  typedef struct {
     unsigned value : 14;
  }Data;
 
+/*Memory flags*/
  typedef enum {
    memoryFull,
    memoryAvailable,
@@ -88,5 +99,5 @@ And the number of bits of the unsigned data's bit field.
 */
 void insertIntoBinaryWord(BinaryWord *, unsigned, int, int);
 
-
+/*Debugging function to print the memory*/
 void printMemory();

@@ -123,7 +123,7 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
             case isConstant:
             {
                 /*Check and get the value of the constant*/
-                wholeNum num = string_to_int(++token);
+                WholeNum num = stringToInt(++token);
                 if(num.isNum && IN_CONST_RANGE(num.result))
                     value = num.result;
                 else if((i = lookUpTable(&symbolHashTable, token)) != NOT_FOUND) 
@@ -172,7 +172,7 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
             {
                 char *left = NULL, *right = NULL, *label, brc[MAX_LABEL_SIZE];
                 int i, size = strlen(token);
-                wholeNum num;
+                WholeNum num;
                 Symbol *symb ;
 
                 /*Get positions of brackets*/
@@ -194,7 +194,7 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
                 brc[i] = '\0';
 
                 /*Get the value between the brackets*/
-                num = string_to_int(brc);
+                num = stringToInt(brc);
                 if(num.isNum && IN_CONST_RANGE(num.result))
                     value = num.result;
                 else if((i = lookUpTable(&symbolHashTable, brc)) != NOT_FOUND) 
@@ -260,8 +260,8 @@ OperandsFlags areLegalOperands(char *str, Field *field1, Field *field2)
     return flag;
 }
 
-StageOneFlags errorHandlerSO(StageOneFlags contextFlag, MemoryFlags memFlag, OperandsFlags opFlag, int lineCounter) {
-    StageOneFlags flag = allclearSO;
+StageOneFlags errorHandlerSO(StageOneFlags contextFlag, StageOneFlags oldFlag, MemoryFlags memFlag, OperandsFlags opFlag, int lineCounter) {
+    StageOneFlags flag = oldFlag;
     switch (contextFlag) {
         ERROR_CASE_SO(errorIllegalKeyWord, "Illegal keyword encountered!\n")
         ERROR_CASE_SO(errorIllegalSymbolOrTableFull, "Illegal symbol encountered or the symbol hash table is full!\n")
