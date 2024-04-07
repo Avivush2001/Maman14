@@ -12,3 +12,8 @@ THIS READ ME FILE BRIEFLY EXPLAINS THE OPERATION OF THE ASSEMBLER
 
 About the structure of the program: We separated tasks into their own files, and created for each one 
 header file, and each header holds macros, structures, functions prototypes for the task (mainly used for the task but available for the rest of the program)
+
+Students details:
+Study group- 780-11 
+Name- Aviv Barak Etedgui, ID- 322706334
+Name- Oded Anuka, ID- 315236430
